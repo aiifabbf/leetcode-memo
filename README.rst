@@ -31,6 +31,7 @@ leetcode备忘录
 -   543 二叉树里任意两点之间的距离的最大值
 -   958 判断二叉树是不是完全二叉树
 -   101 判断二叉树是不是沿y轴对称
+-   662 二叉树的最大宽度
 
 可优化
 ==========
@@ -41,7 +42,7 @@ leetcode备忘录
 ==========
 
 判断一个array是不是另一个array的subsequence（可以不连续）
-------------------------------------------------
+--------------------------------------------------
 
 .. code:: python
 
@@ -55,8 +56,14 @@ leetcode备忘录
         else:
             return True
 
+判断一个array是不是另一个array的substring（连续）
+-------------------------------------------
+
+.. code:: python
+
+
 二叉树的先根遍历
-----------
+-------------
 
 .. code:: python
 
@@ -74,7 +81,7 @@ leetcode备忘录
                 pass
 
 二叉树的中根遍历
-----------
+-------------
 
 .. code:: python
 
@@ -90,7 +97,7 @@ leetcode备忘录
                 pass
 
 二叉树的后根遍历
-----------
+-------------
 
 .. code:: python
 
@@ -184,6 +191,12 @@ leetcode备忘录
                 else:
                     return 0
 
+衍生
+
+-   103 二叉树的zigzag遍历
+-   513 二叉树最后一层的最左边节点的值
+-   515 二叉树最后一层的最大节点值
+
 取得二叉树的所有叶子节点值
 ----------------------
 
@@ -238,6 +251,34 @@ leetcode备忘录
 衍生
 
 -   129
+-   988
+
+判断二叉树是不是二分搜索树（BST）
+----------------------------
+
+.. code:: python
+
+    # 摘自98
+
+    class Solution:
+        def isValidBST(self, root: TreeNode) -> bool:
+            return self.isBST(root, float("-inf"), float("inf"))
+
+        def isBST(self, root: TreeNode, lower: int, upper: int) -> bool: # 除了root还要传入上下界
+            if root:
+                if root.val > lower and root.val < upper: # 首先根节点要在上下界之内
+                    if root.left != None and root.right == None: # 左边子树非空、右边子树空
+                        return root.left.val < root.val and self.isBST(root.left, lower, root.val) # 下界不变，上界变成根节点的值
+                    elif root.left == None and root.right != None: # 左边子树空、右边子树非空
+                        return root.right.val > root.val and self.isBST(root.right, root.val, upper) # 下界变成根节点的值，上界不变
+                    elif root.left != None and root.right != None:
+                        return root.left.val < root.val and root.right.val > root.val and self.isBST(root.left, lower, root.val) and self.isBST(root.right, root.val, upper)
+                    else:
+                        return True
+                else: # 不然即使自己是BST，作为子树放在上层里也不能使大树是BST
+                    return False
+            else: # 空树是BST
+                return True
 
 计算器
 -----
