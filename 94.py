@@ -1,4 +1,13 @@
-# 二叉树的中根遍历
+"""
+二叉树的中根遍历
+
+两种方法
+
+-   递归
+-   借助stack迭代
+
+递归不谈了。144题里讲过了。
+"""
 
 from typing import *
 
@@ -19,5 +28,16 @@ class Solution:
             if root.right:
                 res += self.inorderTraversal(root.right)
             return res
+        else:
+            return []
+
+    def inorderTraversal(self, root: TreeNode) -> List[int]:
+        if root:
+            res = []
+            stack = [root]
+
+            while stack:
+                
+
         else:
             return []

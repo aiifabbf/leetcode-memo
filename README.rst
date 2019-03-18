@@ -27,16 +27,16 @@ leetcode备忘录
 -   835 平移找矩阵最大重合面积
 -   994 元胞自动机
 -   436 寻找区间列里比现在这个大的最小的区间
--   98 检查一个树是不是二分搜索树
--   543 二叉树里任意两点之间的距离的最大值
 -   958 判断二叉树是不是完全二叉树
--   101 判断二叉树是不是沿y轴对称
 -   662 二叉树的最大宽度
 
 可优化
 ==========
 
 -   523 找substring能否累加得到k的整数倍
+-   653 二分搜索树中的two sum
+-   671 找到一个满足一些特殊性质的二叉树里的倒数第二小的节点值
+-   543 二叉树里任意两点之间的距离的最大值
 
 一些模板
 ==========
@@ -65,6 +65,8 @@ leetcode备忘录
 二叉树的先根遍历
 -------------
 
+可以用递归
+
 .. code:: python
 
     # 改编自144
@@ -72,13 +74,40 @@ leetcode备忘录
     class Solution:
         def preorderTraversal(self, root: TreeNode) -> List[int]:
             if root:
-                doSomthing(root.val)
+                doSomthing(root.val) # 比如放入数组之类的
                 if root.left:
                     self.preorderTraversal(root.left)
                 if root.right:
                     self.preorderTraversal(root.right)
             else:
                 pass
+
+也可以用迭代、借助stack。好处有两个
+
+-   速度快一点
+-   不受递归深度限制
+
+.. code:: python
+
+    # 改编自144
+
+    class Solution:
+        def preorderTraversal(self, root: TreeNode) -> List[int]:
+            if root:
+                res = []
+                stack = [root]
+
+                while stack:
+                    node = stack.pop()
+                    res.append(node.val) # 这里相当于访问node
+                    if node.right: # 这里要记住是右边先进stack
+                        stack.append(node.right)
+                    if node.left:
+                        stack.append(node.left)
+
+                return res
+            else:
+                return []
 
 .. note:: 先根遍历路径的特点
 
@@ -101,7 +130,11 @@ leetcode备忘录
 二叉树的中根遍历
 -------------
 
+可以用递归，只要把对根节点的访问的语句放到中间就算中根遍历了。
+
 .. code:: python
+
+    # 改编自94
 
     class Solution:
         def inorderTraversal(self, root: TreeNode) -> List[int]:
@@ -113,6 +146,8 @@ leetcode备忘录
                     self.inorderTraversal(root.right)
             else:
                 pass
+
+也可以借助stack，然后迭代，但是写起来挺麻烦的……
 
 .. note::
 
@@ -206,12 +241,12 @@ leetcode备忘录
             if root:
                 queue = [root]
                 while queue:
-                    for i in queue:
-                        if i.left:
-                            queue.append(i.left)
-                        if i.right: # 切记切记这里不是elif，是if，因为左边和右边根本没关系
-                            queue.append(i.right)
-                        doSomething(i)
+                    i = queue.pop()
+                    if i.left:
+                        queue.append(i.left)
+                    if i.right: # 切记切记这里不是elif，是if，因为左边和右边根本没关系
+                        queue.append(i.right)
+                    doSomething(i)
             else:
                 pass
 
@@ -244,6 +279,24 @@ leetcode备忘录
 -   103 二叉树的zigzag遍历
 -   513 二叉树最后一层的最左边节点的值
 -   515 二叉树最后一层的最大节点值
+
+得到二叉树的深度
+-------------
+
+以前一直是用广度优先、按层遍历来做的（104题），但是也有非常简单的写法，比如
+
+.. code:: python
+
+    # 摘自543
+
+    class Solution:
+        def maxDepth(self, root: TreeNode) -> int:
+            if root:
+                return 1 + max(self.maxDepth(root.left), self.maxDepth(root.right))
+            else:
+                return 0
+
+不一定比按层遍历快，但是写起来足够简单。
 
 取得二叉树的所有叶子节点值
 ----------------------
@@ -300,6 +353,7 @@ leetcode备忘录
 
 -   129
 -   988
+-   113
 
 判断二叉树是不是二分搜索树（BST）
 ----------------------------
@@ -347,6 +401,22 @@ leetcode备忘录
                 root.left = self.sortedArrayToBST(nums[0: n // 2]) # 构造左边子树
                 root.right = self.sortedArrayToBST(nums[n // 2 + 1:]) # 构造右边子树
                 return root
+
+衍生
+
+-   1008 从二分搜索树的先根遍历路径重建出二分搜索树
+
+筛选出出现频次最高的元素
+--------------------
+
+提示一下，如果有多种元素出现的频次一样而且恰好最高，怎么写最好？
+
+.. code:: python
+
+    # 摘自 https://leetcode.com/problems/most-frequent-subtree-sum/discuss/98675/Python-easy-understand-solution
+
+    maximumFrequency = max(counter.values()) # 首先得到最高频次
+    return [i for i, v in counter.items() if v == maximumFrequency] # 再筛选出频次和最高频次一样大的元素
 
 计算器
 -----
