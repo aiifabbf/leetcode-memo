@@ -23,13 +23,13 @@ class Solution:
         counter = collections.Counter()
         queue = [root]
 
-        while queue:
+        while queue: # 遍历每一个子树
             i = queue.pop()
             if i.left:
                 queue.append(i.left)
             if i.right:
                 queue.append(i.right)
-            counter[self.treeSum(i)] += 1
+            counter[self.treeSum(i)] += 1 # 取得每种和的频次
 
         # 下面的步骤其实挺麻烦的，就是要筛选出频次最高的，但是问题是可能会有多个元素频次一样多而且恰好是最高的。好像已经出现过很多次这种要求了，我也不知道最佳做法是什么。
         # res = []
@@ -49,8 +49,8 @@ class Solution:
         return [i for i, v in counter.items() if v == maximumFrequency]
 
     @functools.lru_cache()        
-    def treeSum(self, root: TreeNode) -> int:
+    def treeSum(self, root: TreeNode) -> int: # 求一个树的和
         if root:
-            return root.val + self.treeSum(root.left) + self.treeSum(root.right)
+            return root.val + self.treeSum(root.left) + self.treeSum(root.right) # 等于左边子树的和加右边子树的和加自己
         else:
             return 0
