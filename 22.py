@@ -50,9 +50,9 @@ from typing import *
 
 class Solution:
     def generateParenthesis(self, n: int) -> List[str]:
-        return self.preorderTraversal(n, n)
+        return self.preorderTraversal(n, n) # 给n个左括号、n个右括号的可用余量
 
-    def preorderTraversal(self, left: int, right: int) -> List[str]: # left是这个节点和接下去允许放的左括号的数量，right同理
+    def preorderTraversal(self, left: int, right: int) -> List[str]: # left是这个节点和接下去允许放的左括号的数量，right也是。每次递归，如果当前节点加的是左括号，那么调用的时候就可用左括号数量-1。限制条件放在当前节点判断，而不是上一层判断。
         if left == 0 and right > 0: # 左括号可用数量为0，不能再添加左括号了，右括号可用数量还有，所以继续下去也只剩下一条路径走到底了，也就是只能添加右括号了，所以直接返回剩下的这条路径。
             return [")" * right]
         elif 0 <= left and left <= right: # 满足限制的其他情况
