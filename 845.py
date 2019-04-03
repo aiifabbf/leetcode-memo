@@ -12,4 +12,7 @@ from typing import *
 
 class Solution:
     def longestMountain(self, A: List[int]) -> int:
-        
+        if len(A) < 3:
+            return 0
+        else:
+            

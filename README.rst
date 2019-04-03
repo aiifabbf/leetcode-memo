@@ -37,6 +37,9 @@ leetcode备忘录
 -   516 最长回文subsequence的长度
 -   813 一个array最多分成k个substring，这些substring的平均值之和的最大值
 -   845 最长山型substring
+-   992 所有含有K种元素的substring的数量
+-   817 链表里有多少个聚类
+-   725 尽可能均匀地把链表分成K组
 
 可优化
 ==========
@@ -50,7 +53,9 @@ leetcode备忘录
 -   88  合并两个从小到大排好序的array
 -   60  1-n的第k种组合
 -   496 找原array里本元素位置右边开始的第一个比本元素大的元素值
--   1029 在没有bigint的情况下判断一个二进制数能否被5整除
+-   1029    在没有bigint的情况下判断一个二进制数能否被5整除
+-   24/25   不转换成list的前提下两两交换链表中相邻的两个节点位置
+-   23  合并K个排好序的链表
 
 一些思路
 ==========
@@ -530,3 +535,85 @@ array中的目标函数优化问题
                 else: # stack空的话，就直接放进去
                     stack.append((i, v))
             return res # 初始化的好处就是最后直接返回，不用补零什么的
+
+遍历链表
+----------
+
+.. code:: python
+    
+    # 改编自206
+
+    class Solution:
+        def reverseList(self, head: ListNode) -> ListNode:
+            if head:
+                sentinel = None
+
+                while head:
+                    doSomething(head)
+                    head = head.next
+
+                return sentinel
+            else:
+                return None
+
+.. note:: 颠倒链表（206题）
+
+    .. code:: python
+
+        class Solution:
+            def reverseList(self, head: ListNode) -> ListNode:
+                # return self.listToLinkedList(self.linkedListToList(head)[:: -1])
+                if head:
+                    sentinel = None
+
+                    while head:
+                        tempSentinel = ListNode(head.val)
+                        tempSentinel.next = sentinel
+                        sentinel = tempSentinel
+                        head = head.next
+
+                    return sentinel
+                else:
+                    return None
+
+.. node:: 链表变成array
+
+    可以看做遍历链表的过程。
+
+    .. code:: python
+
+        # 摘自206
+
+        class Solution:
+            def linkedListToList(self, head: ListNode) -> List:
+                if head:
+                    res = []
+
+                    while head:
+                        res.append(head.val)
+                        head = head.next
+
+                    return res
+                else:
+                    return []
+
+array变成链表
+-------------
+
+.. code:: python
+
+    # 摘自206
+
+    class Solution:
+        def listToLinkedList(self, array: List) -> ListNode:
+            if array:
+                head = ListNode(0) # 先生成一个假节点
+                sentinel = head # 不要丢了假节点的引用
+
+                for v in array:
+                    head.next = ListNode(v)
+                    head = head.next
+                
+                return sentinel.next # 第一个是假节点，没用，返回假节点后面的第一个节点，这个才是真节点
+            else:
+                return None
