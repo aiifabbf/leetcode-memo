@@ -40,6 +40,7 @@ leetcode备忘录
 -   992 所有含有K种元素的substring的数量
 -   817 链表里有多少个聚类
 -   725 尽可能均匀地把链表分成K组
+-   316 删掉重复的字符并且保证剩下的字符串的字典排序值最小
 
 可优化
 ==========
@@ -56,6 +57,7 @@ leetcode备忘录
 -   1029    在没有bigint的情况下判断一个二进制数能否被5整除
 -   24/25   不转换成list的前提下两两交换链表中相邻的两个节点位置
 -   23  合并K个排好序的链表
+-   430 在不先转换成list的前提下展平一个带分支的双向链表
 
 一些思路
 ==========
@@ -576,7 +578,7 @@ array中的目标函数优化问题
                 else:
                     return None
 
-.. node:: 链表变成array
+.. note:: 链表变成array
 
     可以看做遍历链表的过程。
 
@@ -596,6 +598,34 @@ array中的目标函数优化问题
                     return res
                 else:
                     return []
+
+.. note:: 遍历的同时不丢失之前一个节点
+
+    在有些需求中，比如在删除第i个节点的时候，需要把第i-1个节点的next直接指向第i+1个节点，但是在遍历到第i个节点时候，如果用上面的代码会发现没办法再去找第i-1个节点了，第i-1个节点已经丢失了。
+
+    此时就要用到假节点，然后再用一个previous记录head之前一个节点。
+
+    .. code:: python
+
+        # 摘自707
+
+        class Solution:
+            def deleteAtIndex(self, index: int) -> None: # 删除第i个节点
+                """
+                Delete the index-th node in the linked list, if the index is valid.
+                """
+                head = self.sentinel.next
+                previous = self.sentinel
+                i = 0
+
+                while head:
+                    if i == index: # 此时head是第i个节点，previous是第i-1个节点
+                        previous.next = head.next # 直接跨过第i个节点，把第i-1个节点和后面的第i+1个节点连起来。
+                        return
+                    else:
+                        i += 1
+                        previous = head
+                        head = head.next
 
 array变成链表
 -------------
