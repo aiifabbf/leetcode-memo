@@ -21,9 +21,9 @@ class Solution:
 
     def preorderTraversal(self, head: "Node") -> List:
         if head:
-            res = [head.val]
-            res += self.preorderTraversal(head.child)
-            res += self.preorderTraversal(head.next)
+            res = [head.val] # 根节点
+            res += self.preorderTraversal(head.child) # 左边子树
+            res += self.preorderTraversal(head.next) # 右边子树
             return res
         else:
             return []

@@ -41,6 +41,7 @@ leetcode备忘录
 -   817 链表里有多少个聚类
 -   725 尽可能均匀地把链表分成K组
 -   316 删掉重复的字符并且保证剩下的字符串的字典排序值最小
+-   1031 存在路径能走到地图边缘的格子数量
 
 可优化
 ==========
@@ -101,7 +102,7 @@ array中的目标函数优化问题
         pos = -1
         for i in subarray:
             try:
-                pos = array.index(i, start=pos + 1)
+                pos = array.index(i, pos + 1) # .index()的start参数不是keyword...
             except:
                 return False
         else:
@@ -647,3 +648,15 @@ array变成链表
                 return sentinel.next # 第一个是假节点，没用，返回假节点后面的第一个节点，这个才是真节点
             else:
                 return None
+
+判断一个数是不是2的次方
+--------------------
+
+如果一个数是2的多少次方，那么这个数的二进制肯定是 ``10000...`` 这种形式，此时这个数如果减1，那么会变成 ``11111...`` 这种形式。
+
+.. code:: python
+
+    if n & (n - 1) == 0:
+        return True
+    else:
+        return False
