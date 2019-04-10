@@ -18,7 +18,7 @@ import functools
 class Solution:
     def sumRootToLeaf(self, root: TreeNode) -> int:
         allPaths = self.allPathsFromRootToLeaf(root)
-        return sum(map(lambda x: int(x, 2), allPaths)) % (10 ** 9 + 7)
+        return sum(map(lambda x: int(x, 2), allPaths)) % (10 ** 9 + 7) # 每条路径先转换成int，再加起来，再取模
     
     @functools.lru_cache()
     def allPathsFromRootToLeaf(self, root: TreeNode) -> List[str]: # 从根节点到叶子节点的所有路径

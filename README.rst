@@ -19,7 +19,7 @@ leetcode备忘录
 -   713
 -   475
 -   784
--   399 
+-   399
 -   866 找不小于n的最小回文素数
 -   491 找数组的递增subsequence
 -   223 找出两个矩形的相交区域的面积
@@ -100,9 +100,10 @@ array中的目标函数优化问题
 
     def isSubArray(subarray, array):
         pos = -1
-        for i in subarray:
+
+        for v in subarray:
             try:
-                pos = array.index(i, pos + 1) # .index()的start参数不是keyword...
+                pos = array.index(v, pos + 1) # .index()的start参数不是keyword...
             except:
                 return False
         else:
@@ -112,6 +113,29 @@ array中的目标函数优化问题
 -------------------------------------------
 
 .. code:: python
+
+    def isSubString(substring, array):
+        try:
+            pos = array.index(substring[0]) # 找到第一个元素的起始位置
+        except:
+            return False
+
+        for i in range(len(substring)):
+            try: # 因为pos + i有可能越界，所以套个try
+                if substring[i] == array[pos + i]:
+                    continue
+                else:
+                    return False
+            except:
+                return False
+
+.. note:: 当然万能的Python可以一行
+
+    .. code:: python
+
+        subsstring in array
+
+    就搞定。
 
 
 二叉树的先根遍历
@@ -543,7 +567,7 @@ array中的目标函数优化问题
 ----------
 
 .. code:: python
-    
+
     # 改编自206
 
     class Solution:
@@ -644,7 +668,7 @@ array变成链表
                 for v in array:
                     head.next = ListNode(v)
                     head = head.next
-                
+
                 return sentinel.next # 第一个是假节点，没用，返回假节点后面的第一个节点，这个才是真节点
             else:
                 return None
@@ -660,3 +684,85 @@ array变成链表
         return True
     else:
         return False
+
+从array中找到某个元素前面、离这个元素最近的、小于或等于这个元素的元素的下标
+---------------------------------------------------------------
+
+文字描述起来很啰嗦，用数学表达就是有一个array记为 :math:`\{a_i\}` ，找到
+
+.. math::
+
+    \max\{j | a_j \leq a_i, 0 \leq j < i\}
+
+暴力做法就是数学表达式本身
+
+1.  取出第i个元素前面的所有元素
+2.  筛选出比第i个元素小或者等于的所有元素
+3.  取出下标最大的那个元素的下标
+
+数学表达式本身代表的做法是无论array的情况是怎样，复杂度都是 :math:`O(n^2)` 。可以稍加改进，变成
+
+1.  看第i-1个元素是否小于或等于第i个元素
+
+    -   是，那么恭喜找到了
+    -   不是，到下一步
+
+2.  看第i-2个元素是否小于或等于第i个元素
+
+    -   是，那么恭喜找到了
+    -   不是，到下一步
+
+3.  ...
+4.  看第0个元素是否小于或等于第i个元素
+
+    -   是，那么恭喜找到了
+    -   不是，那么也没了，说明根本不存在这样的元素
+
+复杂度最差情况是 :math:`O(n^2)` ，出现在array正好单调递减的情况；最好情况 :math:`O(n)` ，出现在array正好单调递增的情况。
+
+再进一步考虑这个比较过程有没有可以缓存的地方 [#]_ 。
+
+.. [#] 这里我再想想怎样从暴力想到stack……
+
+用单调递增stack可以实现 :math:`O(n)` 。
+
+.. code:: python
+
+    # 摘自907
+
+    stack = [] # 单调递增stack，里面存的是 (i, v) 其中v是从底到顶单调递增的
+    nearestLessOrEqualElementPosition = [-1] * len(A) # 初始化数组，nearestLessOrEqualElementPosition[i] 表示的是，第i个元素前面最近的、比第i个元素小或者相等的元素的下标。
+
+    for i, v in enumerate(A):
+
+        while stack != [] and stack[-1][1] > v: # stack顶上的元素比当前元素大
+            stack.pop() # 所以要pop掉
+        # 出while循环之后，stack要么是空的，要么顶部的那个元素小于等于v，也就定位到了第i个元素前面最近的、比第i个元素小或相等的元素和下标
+
+        if stack == []: # 如果stack空了，说明第i个元素前面不存在比自己小或者相等的元素，即第i个元素前面的元素全都比自己大
+            nearestLessOrEqualElementPosition[i] = -1 # 用-1表示没有
+        else: # stack没空，说明前面确实存在小于等于第i个元素的元素，并且最近的元素就刚好在stack顶部
+            nearestLessOrEqualElementPosition[i] = stack[-1][0] # 所以找到了，记录一下
+        stack.append((i, v)) # 再把当前元素放进stack
+
+二分搜索
+-------
+
+.. code:: python
+
+    # 改编自 https://en.wikipedia.org/wiki/Binary_search_algorithm 的伪代码
+
+    def binarySearch(nums: List[int], target: int) -> int:
+        left = 0
+        right = len(nums)
+
+        while left < right:
+            middle = (left + right) // 2
+            if nums[middle] < target:
+                left = middle + 1
+            elif nums[middle] > target:
+                right = middle
+            else:
+                return middle
+
+        return -1
