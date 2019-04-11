@@ -42,6 +42,7 @@ leetcode备忘录
 -   725 尽可能均匀地把链表分成K组
 -   316 删掉重复的字符并且保证剩下的字符串的字典排序值最小
 -   1031 存在路径能走到地图边缘的格子数量
+-   315 找到当前元素前面比当前元素小的元素的个数
 
 可优化
 ==========
@@ -762,7 +763,61 @@ array变成链表
                 left = middle + 1
             elif nums[middle] > target:
                 right = middle
-            else:
+            else: # 可以加一行这个提前退出
                 return middle
 
         return -1
+
+.. note:: 如果array不是严格递增的，是含有重复的，那么就涉及到返回最左边还是最右边元素下标的问题。
+
+    .. code::
+
+        # 寻找最左边最先出现的target的下标
+
+        def binarySearchLeftmost(nums: List[int], target: int) -> int:
+            left = 0
+            right = len(nums)
+
+            while left < right:
+                middle = (left + right) // 2
+                if nums[middle] < target: # 注意这里是 <
+                    left = middle + 1
+                else:
+                    right = middle
+
+            # 如果存在的话，left就是最左边等于target的元素的下标，但是如果不存在的话你也不知道，所以要判断一下。
+            if 0 <= left <= len(nums) - 1: # 防止越界
+                if nums[left] == target:
+                    return left
+                else:
+                    return -1
+            else:
+                return -1
+
+    .. code::
+
+        # 寻找最右边最晚出现的target的下标
+
+        def binarySearchRightmost(nums: List[int], target: int) -> int:
+            left = 0
+            right = len(nums)
+
+            while left < right:
+                middle = (left + right) // 2
+                if nums[middle] < target: # 注意这里是 <=
+                    left = middle + 1
+                else:
+                    right = middle
+
+            # 如果存在的话，right - 1就是最右边等于target的元素的下标，但是如果不存在的话你也不知道，所以判断一下为好。
+            if 0 <= right - 1 <= len(nums) - 1:
+                if nums[right - 1] == target:
+                    return right - 1
+                else:
+                    return -1
+            else:
+                return -1
+
+衍生
+
+-   278 找到第一个bad version
