@@ -17,6 +17,13 @@ r"""
 
 -   如果 :math:`L \leq a_i \leq R` ，那么一路往前，直到遇到第一个大于R的数 :math:`a_j` ，这之间的数 :math:`[j + 1, i]` 一共 :math:`i - j` 个，都可以组合，所以 :math:`p_i = i - j` ；如果一路往前都没有遇到任何一个大于R的数，说明 :math:`[0, i]` 之间一共 :math:`i + 1` 个数都可以组合，所以 :math:`p_i = i + 1`
 -   如果 :math:`a_i < L` ，那么只有自己肯定是不行的，必须一路往前，找到第一个在范围 :math:`[L, R]` 内的数 :math:`a_j` 才能开始组合，这时候 :math:`p_i = p_j` ；一旦在遇到 :math:`a_j` 之前，遇到了一个大于R的数，那么只能作废，这时候 :math:`p_i = 0` 。
+
+可以给上面的动态规划过程做一点优化
+
+-   :math:`a_i < L` 的情况，其实一个 :math:`p_i = p_{i - 1}` 就可以了，不需要那么麻烦还要往前找。因为 :math:`a_i < L` 一定能够保证当 :math:`a_i` 追加到以 :math:`a_{i - 1}` 结尾的所有满足条件的substring时，这些substring的最大值不会有变化，所以随便加。
+-   :math:`L \leq a_i \leq R` 的情况也可以优化，可以用一个数记录一下最近遇到的大于R的数的下标，这样就不用每次去从后往前找了。
+-   当然还有老生常谈的，一边DP一边加，省得最后再加。
+-   最后，既然不用往前找了，那么就会发现每次只会用到 :math:`p_{i - 1}` ，所以之前的也就没必要存着了。 ``dp`` 就可以从array变成一个数了。
 """
 
 from typing import *
@@ -24,40 +31,65 @@ from typing import *
 class Solution:
     def numSubarrayBoundedMax(self, A: List[int], L: int, R: int) -> int:
         if L <= A[0] <= R:
-            dp = [1]
+            # dp = [1]
+            dp = 1
+            summation = 1
+            lastAboveBoundElementPosition = -1 # 用一个数记录一下最近遇到的大于R的数的下标
         else:
-            dp = [0]
+            # dp = [0]
+            dp = 0
+            summation = 0
+            if A[0] > R:
+                lastAboveBoundElementPosition = 0
+            else:
+                lastAboveBoundElementPosition = -1
 
         for i, v in enumerate(A[1: ], 1):
             if v > R: # 如果a_i > R，那么绝对没机会
-                dp.append(0)
+                # dp.append(0)
+                dp = 0
+                lastAboveBoundElementPosition = i
             elif L <= v <= R: # 如果L <= a_i <= R，那么往前找，直到遇到一个a_j > R
 
-                for j in reversed(range(0, i)): # 往前找一个a_j > R
-                    if A[j] > R: # 遇到了a_j
-                        dp.append(i - j) # [j + 1, i]之间的数，一共i - j个数，都可以组合
-                        break
-                    else:
-                        continue
-                else: # a_i前面的数都小于等于R，那么[0, i]之间的数，一共i + 1个数全部都可以组合
-                    dp.append(i + 1)
+                # for j in reversed(range(0, i)): # 往前找一个a_j > R
+                #     if A[j] > R: # 遇到了a_j
+                #         dp.append(i - j) # [j + 1, i]之间的数，一共i - j个数，都可以组合
+                #         break
+                #     else:
+                #         continue
+                # else: # a_i前面的数都小于等于R，那么[0, i]之间的数，一共i + 1个数全部都可以组合
+                #     dp.append(i + 1)
+
+                # if lastAboveBoundElementPosition == -1:
+                #     # dp.append(i + 1)
+                #     dp = i + 1
+                #     summation += i + 1
+                # else:
+                #     # dp.append(i - lastAboveBoundElementPosition)
+                #     dp = i - lastAboveBoundElementPosition
+                #     summation += i - lastAboveBoundElementPosition
+                # 这两种情况可以合并，省一个判断
+                dp = i - lastAboveBoundElementPosition
+                summation += dp
 
             else: # v < L
 
-                for j in reversed(range(0, i)): # 往前找一个L <= a_j <= R
-                    if A[j] > R: # 一旦遇到了一个大于R的数
-                        dp.append(0) # 全部作废
-                        break
-                    elif L <= A[j] <= R: # 遇到了范围内的数a_j
-                        dp.append(dp[j]) # p_i = p_j
-                        break
-                    else: # 遇到了小于L的数
-                        continue # 没关系，继续往前找
-                else: # 找了一圈都没有找到范围内的数，也没有大于R的数，说明前面的数全部都是小于L的数
-                    dp.append(0) # 那么也没有办法组合，只能是0
+                # for j in reversed(range(0, i)): # 往前找一个L <= a_j <= R
+                #     if A[j] > R: # 一旦遇到了一个大于R的数
+                #         dp.append(0) # 全部作废
+                #         break
+                #     elif L <= A[j] <= R: # 遇到了范围内的数a_j
+                #         dp.append(dp[j]) # p_i = p_j
+                #         break
+                #     else: # 遇到了小于L的数
+                #         continue # 没关系，继续往前找
+                # else: # 找了一圈都没有找到范围内的数，也没有大于R的数，说明前面的数全部都是小于L的数
+                #     dp.append(0) # 那么也没有办法组合，只能是0
+                
+                # dp.append(dp[-1]) # 其实这种情况下，一个p_i = p_{i - 1}就解决了，因为a_i小于L，所以加到以a_{i - 1}结尾的substring里，肯定不影响这些substring的最大值
+                summation += dp
 
-        # print(dp, sum(dp))
-        return sum(dp)
+        return summation
 
 # s = Solution()
 # assert s.numSubarrayBoundedMax([2, 1, 4, 3], 2, 3) == 3
