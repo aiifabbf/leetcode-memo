@@ -25,7 +25,7 @@ class Solution:
                     buffer = ""
                 else:
                     pass
-        
+
         # print(primitives)
         return "".join(primitives)
 
