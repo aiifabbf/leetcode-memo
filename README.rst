@@ -12,6 +12,10 @@ leetcode备忘录
 
 .. contents::
 
+.. note:: 有些题号是 ``1024-5019`` 这种形式的，前一个数字表示题库里的编号，后一个数字表示contest里的编号。
+
+    为什么从1010才开始这种题号形式呢？因为我从1013才开始做每周contest的，1010是我做virtual contest练手的。
+
 未解决
 ==========
 
@@ -43,6 +47,7 @@ leetcode备忘录
 -   316 删掉重复的字符并且保证剩下的字符串的字典排序值最小
 -   1031 存在路径能走到地图边缘的格子数量
 -   315 找到当前元素前面比当前元素小的元素的个数
+-   862 和大于等于K的substring的最小长度
 
 可优化
 ==========
@@ -60,6 +65,7 @@ leetcode备忘录
 -   24/25   不转换成list的前提下两两交换链表中相邻的两个节点位置
 -   23  合并K个排好序的链表
 -   430 在不先转换成list的前提下展平一个带分支的双向链表
+-   55  能否跳到array的最后一格
 
 一些思路
 ==========
@@ -90,6 +96,15 @@ array中的目标函数优化问题
 例
 
 -   1021 一个中规中矩的dp题
+
+array中满足某个条件的所有substring问题
+-----------------------------------
+
+一般形式是找到array中所有满足某个条件 :math:`g(i, j)` 的substring（要连续）。可能是个数，可能是具体的哪些 :math:`(i, j)` 。具体形式是求集合
+
+.. math::
+
+    \{(i, j) | g(i, j) = \text{True}, 0 \leq i \leq j \leq n - 1\}
 
 一些模板
 ==========
@@ -746,6 +761,47 @@ array变成链表
             nearestLessOrEqualElementPosition[i] = stack[-1][0] # 所以找到了，记录一下
         stack.append((i, v)) # 再把当前元素放进stack
 
+话说我居然之前都不记得自己没看答案就自己做出递增递减stack的题目。739是没看答案自己想出来的，结果看到907的时候居然又不会做了。但是一想也可以理解吧，因为739、1019是找元素后面比自己大的元素，而907是倒过来、找元素前面比自己小的元素，但是两个stack的建立方向（也就是遍历array的方向）却是一样的、都是从前往后的。
+
+两种做法应该是可以互相转化的。
+
+.. code:: python
+
+    # 摘自739
+
+        class Solution:
+            def dailyTemperatures(self, T: List[int]) -> List[int]:
+                # stack = [
+                #     (0, T[0])
+                # ]
+                stack = [] # stack里的元素保证从底到顶递减（不是严格递减，可以相等）
+                res = [0] * len(T) # 先初始化，每天都假设永远等不到气温比今天高的那天，这样最后不用补0什么的，方便一点
+
+                for i, v in enumerate(T):
+                    if stack:
+
+                        while True:
+                            if stack:
+                                day = stack.pop() # 这里pop了，后面如果发现大于等于今天的气温，记得要放回去
+                                if v > day[1]: # 和stack顶部的元素比较，如果今天气温大于这一天的气温，说明那一天找到了离自己最近的、比自己气温高的那一天
+                                    res[day[0]] = i - day[0] # 把那一天的值设为今天和那一天的日期之差
+                                else: # 发现今天气温小于等于那一天的气温，那么说明那一天至今都没有找到比自己气温高的日子，同时因为stack保证气温递减，所以顶部以下的日子都不用看了，能保证顶部以下的所有日子的气温都大于等于顶部那天的气温。
+                                    stack.append(day) # 记得把那一天放回去
+                                    stack.append((i, v)) # 再把今天放进去
+                                    break # 继续明天
+                            else: # stack已经空了，没日子好比较了
+                                stack.append((i, v)) # 直接把今天放进去
+                                break # 继续明天
+
+                    else: # stack空的话，就直接放进去
+                        stack.append((i, v))
+                return res # 初始化的好处就是最后直接返回，不用补零什么的
+
+衍生
+
+-   739 找到array中每个元素之后最近的比自己大的元素 递减stack
+-   1019 找到链表中每个节点之后最近的比自己大的元素 递减stack
+
 二分搜索
 -------
 
@@ -770,7 +826,7 @@ array变成链表
 
 .. note:: 如果array不是严格递增的，是含有重复的，那么就涉及到返回最左边还是最右边元素下标的问题。
 
-    .. code::
+    .. code:: python
 
         # 寻找最左边最先出现的target的下标
 
@@ -794,7 +850,7 @@ array变成链表
             else:
                 return -1
 
-    .. code::
+    .. code:: python
 
         # 寻找最右边最晚出现的target的下标
 
@@ -820,4 +876,17 @@ array变成链表
 
 衍生
 
+-   704 二分搜索
 -   278 找到第一个bad version
+
+区间求和
+-------
+
+如果经常需要求 ``nums[i: j]`` 的和，可以先用 ``itertools.accumulate()`` 一次性把所有和都求出来，这样
+
+.. code:: python
+
+    integral = [0] + list(itertools.accumulate(nums)) # 前面添一个0，这样方便很多
+    assert integral[j] - integral[i] == sum(nums[i: j])
+
+这样 ``nums[i: j]`` 的和就是 ``integral[j] - integral[i]`` 。
