@@ -276,6 +276,7 @@ array中满足某个条件的所有substring问题
 -   105 从中根、先根遍历路径中恢复出二叉树
 -   106 从中根、后根遍历路径中恢复出二叉树
 -   889 从先根、后根遍历路径中恢复出二叉树的一种可能
+-   1028 从一种奇怪的先根遍历路径中恢复出二叉树
 
 二叉树的后根遍历
 -------------
@@ -387,6 +388,7 @@ array中满足某个条件的所有substring问题
 -   103 二叉树的zigzag遍历
 -   513 二叉树最后一层的最左边节点的值
 -   515 二叉树最后一层的最大节点值
+-   919 给完全二叉树插入节点
 
 得到二叉树的深度
 -------------
@@ -890,3 +892,29 @@ array变成链表
     assert integral[j] - integral[i] == sum(nums[i: j])
 
 这样 ``nums[i: j]`` 的和就是 ``integral[j] - integral[i]`` 。
+
+无向图中判断两个节点之间是否有路径联通
+--------------------------------
+
+就是union find。首先需要一个dict或者array来存节点之间的连接关系，在 ``(key, value)`` 中， ``key`` 表示节点， ``value`` 表示这个节点的父节点。如果两个节点在同一个树中，说明它们之间有路径联通。判断两个节点是否在同一个树中的问题可以等效为判断两个节点所在的树的根节点是否是同一个节点的问题。
+
+.. code:: python
+
+    # 改编自1020
+
+    class Solution:
+        def union(self, mapping: dict, p: Type, q: Type) -> None: # 建立连接关系
+            rootOfP = self.root(mapping, p) # 找到p所在树的根节点
+            rootOfQ = self.root(mapping, q) # 找到q所在树的根节点
+            mapping[rootOfP] = rootOfQ # 把p所在的树的根节点贴到q所在的树的根节点上
+
+        def isConnected(self, mapping: dict, p: Type, q: Type) -> bool: # 判断两个节点之间是否存在路径相连
+            return self.root(mapping, p) == self.root(mapping, q) # 只要判断两个节点是否在同一个树里就可以了，等效为判断两个节点所在树的根节点是否是同一个节点
+
+        def root(self, mapping: dict, r: Type) -> Type: # 得到某个节点所在树的根节点
+
+            while r != mapping[r]: # 如果当前节点的父节点不是自身，说明当前节点不是根节点
+                mapping[r] = mapping[mapping[r]] # 这一句话是避免树过深的关键
+                r = mapping[r]
+
+            return r
