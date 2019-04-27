@@ -862,7 +862,7 @@ array变成链表
 
             while left < right:
                 middle = (left + right) // 2
-                if nums[middle] < target: # 注意这里是 <=
+                if nums[middle] <= target: # 注意这里是 <=
                     left = middle + 1
                 else:
                     right = middle
@@ -918,3 +918,6 @@ array变成链表
                 r = mapping[r]
 
             return r
+
+衍生
+-   200 孤立岛屿的个数
