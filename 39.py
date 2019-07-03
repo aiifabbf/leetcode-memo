@@ -24,7 +24,7 @@ class Solution:
     def combinationSum(self, candidates: List[int], target: int) -> List[List[int]]:
         routes = self.findAllRoutesSumToTarget(candidates, target)
         # print(list(map(list, set(map(tuple, map(sorted, routes))))))
-        return list(set(map(tuple, map(sorted, routes)))) # 简单过滤一下就可以return了。这里过滤用的方法是
+        return list(set(map(tuple, map(sorted, routes)))) # 简单过滤一下就可以return了。这里过滤用的方法是先每条路径排序、然后变成tuple（这样才可以hash）、放入set（过滤掉重复的tuple）、再变成list
 
     def findAllRoutesSumToTarget(self, candidates: List[int], target: int) -> List[List[int]]: # 不考虑重复路径
         res = []
