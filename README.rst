@@ -2,6 +2,8 @@
 leetcode备忘录
 =============
 
+.. default-role:: math
+
 .. note:: 前情提要
 
     前大概200题在我\ 博客_\ 上。
@@ -536,6 +538,8 @@ array中满足某个条件的所有substring问题
 
 意思是允许 ``[2, 2, 3]`` ，但是认为 ``[2, 2, 3], [3, 2, 2]`` 是重复的组合。
 
+做法是先排个序，然后变成tuple，然后用set套一套，再变成list。
+
 .. code:: python
 
     # 摘自39
@@ -893,6 +897,10 @@ array变成链表
 
 这样 ``nums[i: j]`` 的和就是 ``integral[j] - integral[i]`` 。
 
+衍生
+
+-   976 有多少个substring的和是K的倍数
+
 无向图中判断两个节点之间是否有路径联通
 --------------------------------
 
@@ -920,4 +928,102 @@ array变成链表
             return r
 
 衍生
+
 -   200 孤立岛屿的个数
+-   1034 描出边界
+
+最长公共subsequence
+------------------
+
+.. code:: python
+
+    # 摘自1035
+
+    class Solution:
+        def maxUncrossedLines(self, A: List[int], B: List[int]) -> int:
+            A = [0] + A
+            B = [0] + B
+            dp = [[0] * len(B) for _ in range(len(A))]
+
+            for i, v in enumerate(A[1: ], 1):
+
+                for j, w in enumerate(B[1: ], 1):
+                    if v == w:
+                        dp[i][j] = dp[i - 1][j - 1] + 1
+                    else:
+                        dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+
+            return dp[-1][-1]
+
+差量更新
+-------
+
+假设窗口的长度是k，移动到第i个格子的时候，要
+
+-   减去第i-1个格子的delta
+-   加上第i-1+k个各自的delta
+
+进制转换
+-------
+
+思路就是不停地整除，每次取商再整除，最后把每次整除得到的余数倒过来排列。
+
+.. code:: python
+
+    # 摘自504
+
+    class Solution:
+        def convertToBase7(self, num: int) -> str:
+            if num == 0:
+                return "0"
+            elif num < 0: # 负数的话
+                return "-" + self.convertToBase7(abs(num)) # 就转换它的绝对值，再在前面加一个负号
+            else: # 正数
+                res = [] # 用来记录余数
+                
+                while num != 0: # 不停地整除7，直到被除数是0为止
+                    res.append(num % 7) # 记下余数
+                    num = num // 7 # 商变成新的被除数
+
+                return "".join(map(str, reversed(res))) # 结果就是每次整除的余数倒序排列
+
+找到直方图里的第n个数
+------------------
+
+.. code:: python
+
+    # 改编自1093
+
+    countDown = n
+
+    for i, v in enumerate(count):
+        if v != 0:
+            if countDown - v <= 0: # 说明第n个数在这一堆里
+                return i
+            else: # 说明第n个数在后面的堆里
+                countDown = countDown - v
+
+得到一个自然数的所有因数
+---------------------
+
+暴力做法是从1遍历到n、然后一个一个判断 ``n % i`` 是否等于0，复杂度 `O(n)` 。
+
+但是因为因数都是成对出现的 [#]_ ，也就是说如果找到了一个因数 `k` ，那么 `n / k` 也必然是n的一个因数（注意判断是否重复），所以没有必要遍历到n。从1遍历到 `\lceil\sqrt{n}\rceil` 就够了。复杂度 `O(\ln n)` 。
+
+.. code:: python
+
+    def divisors(n: int) -> set:
+        factors = {} # 用set可以过滤掉重复的因数
+
+        for i in range(1, math.ceil(n) + 1):
+            if n % i == 0: # 发现i是因数
+                factors.add(i)
+                factors.add(n // i) # n // i也是n的某个因数
+
+        return factors
+
+.. [#] https://www.geeksforgeeks.org/find-divisors-natural-number-set-1/
+
+衍生
+
+-   829 找n的所有奇因数
