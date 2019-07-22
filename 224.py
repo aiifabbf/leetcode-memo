@@ -80,36 +80,26 @@ class Solution:
             r"|(\(|\))"
          ]) # group3 括号
         pattern = re.compile(patternString) # 编译pattern，这样会快
-        tokens = collections.deque(v.group() for v in pattern.finditer(s)) # 因为这个题里类别比较少，所以这里就不归类了，直接在evaluate的时候归类
+        tokens = map(lambda v: v.group(), pattern.finditer(s)) # 用generator可以省内存
         return self.evaluateTokens(tokens)
 
-    def evaluateTokens(self, tokens: collections.deque) -> int:
-        if not tokens: # token list是空的，说明表达式就是空的
-            return 0
-        elif len(tokens) == 1: # 如果token list只有1个元素
-            return int(tokens[0]) # 肯定是数字，所以直接evaluate
-
+    def evaluateTokens(self, tokens: "Iterable") -> int:
         stack = collections.deque() # stack需要频繁pop和push，用deque会快很多
+        buffer = collections.deque() # 因为token list现在是个generator了，所以没办法insert了，用一个deque做缓冲区
 
-        while tokens:
-            token = tokens.popleft() # 取出下一个token
+        while True:
+            if buffer: # 如果缓冲区里有token
+                token = buffer.popleft() # 先取缓冲区里的token
+            else:
+                token = next(tokens, None) # 不然就从generator里取
+                if token == None: # token list和缓冲区都空了
+                    break
             v = token
             if v == "(": # 左括号
                 stack.append(token) # 直接push到stack顶端
             elif v == ")": # 右括号
-                # temp = collections.deque()
-
-                # while stack: # 不停pop stack
-                #     temp.appendleft(stack.pop())
-                #     if temp[0] == "(": # 直到遇到左括号
-                #         temp.popleft()
-                #         break
-
-                # stack.append(str(self.evaluateTokens(temp)))
-                # 并没有必要这么做，因为只会出现 (8 这种情况
-
-                tokens.insert(0, stack.pop()) # 把子表达式的值放回token list
-                stack.pop() # pop掉左括号
+                buffer.appendleft(stack.pop())
+                stack.pop()
             elif v.lstrip("+-").isdigit(): # 数字。巨坑，.isdigit()对负数返回false
                 if stack and (stack[len(stack) - 1] == "+" or stack[len(stack) - 1] == "-"): # 如果stack非空，并且顶端是加减号
                     op = stack.pop() # 得到操作符
@@ -123,7 +113,10 @@ class Solution:
             else: # 加号或者减号
                 stack.append(token) # 只能push
 
-        return int(stack[0])
+        if stack: # stack非空时只会有一个数字，这就是最终结果
+            return int(stack[0])
+        else: # stack空，说明token list空，表达式为空
+            return 0
 
 # s = Solution()
 # print(s.calculate("")) # 0
@@ -137,12 +130,11 @@ class Solution:
 # print(s.calculate("8+4-(1)")) # 11
 # print(s.calculate("8+4-(1)+8-10")) # 9
 # print(s.calculate("2-4-(8+2-6+(8+4-(1)+8-10))")) # -15
-# print(s.calculate("1+7-7+3+3+6-3+1-8-2-6-1+8-0+0-2+0+10-6-9-9+0+6+4+2+7+1-4-6-6-0+6+3-7+0-4+10-2-5+6-1-3+7+7+2+0+2-8+7+2-3-8-9-6+10-7-6+3-8+5+6-7-10-6-8-10-8+1+9+1-9-1+10+10+3+7-1-10+1-0-7+0-3-3+4+7-9-10-1+4-8-3-0-1-0-3+5-10+6-6-0-6-6-7+7+10+10-5-9-10-2-8+9-2-8-7-9-0-6-5-1+1+3+8-5-8+3-9+9+6-5+0-2+0+8+8-4+6+1-2-0-10-8+1-2-8+2-2-2-4+2+5+3-9+1+9-8+9-8+7+10+1+10-9+2+2+8+7-10-8+6+6+3+0+4-1+0+7-3+8-8-4+8-6-6+3-3-9+6+4+6+7-2-0+6-10+8-2-4+3-8+1-2+8+1-2-4-3-9-4-1-3+5+9+7-8-2+7-10+7+9+1+5-5+8-3-10-7-1-7+10+3+2-8-8+0+9+3+6+8+4+2+10+8+6-1+2+10-5+5+4-2+10+7-6-5+9-9+5-5-2+5+2-1+7-8+4-2+2+2+5-10-7-0+5-8-6-10-5+9-1+1-8+10-7+2-3-3+2+3-8+4-6-7+3-0+6-6-3+1+2-6+2+3+0-4-0+3-5-1-4-0+9+5-6+3-10+0+10-4+6-6-5-6+5+3+7-4+6+2+0+10+4-3+10-10-0-10-4-8+9-5-0-0-9-8-3-2+6"))
-# print(s.calculate("1 + (2 + (3 + (4 + 5) + 6 + (9 + 1)+9+2+1+4) + (1 + 3 + 3) + 7) + 8"))
+# print(s.calculate("1+7-7+3+3+6-3+1-8-2-6-1+8-0+0-2+0+10-6-9-9+0+6+4+2+7+1-4-6-6-0+6+3-7+0-4+10-2-5+6-1-3+7+7+2+0+2-8+7+2-3-8-9-6+10-7-6+3-8+5+6-7-10-6-8-10-8+1+9+1-9-1+10+10+3+7-1-10+1-0-7+0-3-3+4+7-9-10-1+4-8-3-0-1-0-3+5-10+6-6-0-6-6-7+7+10+10-5-9-10-2-8+9-2-8-7-9-0-6-5-1+1+3+8-5-8+3-9+9+6-5+0-2+0+8+8-4+6+1-2-0-10-8+1-2-8+2-2-2-4+2+5+3-9+1+9-8+9-8+7+10+1+10-9+2+2+8+7-10-8+6+6+3+0+4-1+0+7-3+8-8-4+8-6-6+3-3-9+6+4+6+7-2-0+6-10+8-2-4+3-8+1-2+8+1-2-4-3-9-4-1-3+5+9+7-8-2+7-10+7+9+1+5-5+8-3-10-7-1-7+10+3+2-8-8+0+9+3+6+8+4+2+10+8+6-1+2+10-5+5+4-2+10+7-6-5+9-9+5-5-2+5+2-1+7-8+4-2+2+2+5-10-7-0+5-8-6-10-5+9-1+1-8+10-7+2-3-3+2+3-8+4-6-7+3-0+6-6-3+1+2-6+2+3+0-4-0+3-5-1-4-0+9+5-6+3-10+0+10-4+6-6-5-6+5+3+7-4+6+2+0+10+4-3+10-10-0-10-4-8+9-5-0-0-9-8-3-2+6")) # -99
+# print(s.calculate("1 + (2 + (3 + (4 + 5) + 6 + (9 + 1)+9+2+1+4) + (1 + 3 + 3) + 7) + 8")) # 69
 
-# 下面的test case实在是太大了
 # import os
 # import sys
 
 # with open(os.path.join(sys.path[0], "224.test")) as f:
-#     print(s.calculate(f.read()))
+#     print(s.calculate(f.read())) # -1946
