@@ -68,6 +68,7 @@ leetcode备忘录
 -   23  合并K个排好序的链表
 -   430 在不先转换成list的前提下展平一个带分支的双向链表
 -   55  能否跳到array的最后一格
+-   44  针对wildcard优化
 
 一些思路
 ==========
@@ -97,7 +98,8 @@ array中的目标函数优化问题
 
 例
 
--   1021 一个中规中矩的dp题
+-   1014 一个中规中矩的dp题
+-   1131 `f(i, j)` 是一个含有三对绝对值号的函数
 
 array中满足某个条件的所有substring问题
 -----------------------------------
@@ -130,28 +132,32 @@ array中满足某个条件的所有substring问题
 判断一个array是不是另一个array的substring（连续）
 -------------------------------------------
 
-.. code:: python
-
-    def isSubString(substring, array):
-        try:
-            pos = array.index(substring[0]) # 找到第一个元素的起始位置
-        except:
-            return False
-
-        for i in range(len(substring)):
-            try: # 因为pos + i有可能越界，所以套个try
-                if substring[i] == array[pos + i]:
-                    continue
-                else:
-                    return False
-            except:
-                return False
-
-.. note:: 当然万能的Python可以一行
+.. note:: 原来的代码
 
     .. code:: python
 
-        subsstring in array
+        def isSubString(substring, array):
+            try:
+                pos = array.index(substring[0]) # 找到第一个元素的起始位置
+            except:
+                return False
+
+            for i in range(len(substring)):
+                try: # 因为pos + i有可能越界，所以套个try
+                    if substring[i] == array[pos + i]:
+                        continue
+                    else:
+                        return False
+                except:
+                    return False
+
+    其实是错的，试试 ``isSubstring("aaab", "aaaab")`` 还有 ``isSubstring("abaab", "aab")`` 。错误之处在于它只会从string里第一次出现 ``substring[0]`` 的地方开始找，如果发现不匹配，就不会往下找了，会直接返回 ``False`` 。
+
+.. note:: 当然万能的Python可以一行搞定array是 ``str`` 时候的情况
+
+    .. code:: python
+
+        substring in array
 
     就搞定。
 
@@ -710,7 +716,7 @@ array变成链表
 从array中找到某个元素前面、离这个元素最近的、小于或等于这个元素的元素的下标
 ---------------------------------------------------------------
 
-文字描述起来很啰嗦，用数学表达就是有一个array记为 :math:`\{a_i\}` ，找到
+文字描述起来很啰嗦，用数学表达就是有一个array记为 :math:`\{a_i\}` ，对于每一个 `i` 找到
 
 .. math::
 
@@ -808,6 +814,34 @@ array变成链表
 -   739 找到array中每个元素之后最近的比自己大的元素 递减stack
 -   1019 找到链表中每个节点之后最近的比自己大的元素 递减stack
 
+从array中找到某个元素前面、离这个元素最远的、小于或等于这个元素的元素的下标
+---------------------------------------------------------------
+
+.. code:: python
+
+    # 摘自962
+
+    class Solution:
+        def maxWidthRamp(self, A: List[int]) -> int:
+            stack = []
+            res = 0
+
+            for i, v in enumerate(A):
+                if stack == [] or stack[-1][1] > v:
+                    stack.append((i, v))
+
+            for j, w in reversed(list(enumerate(A))):
+
+                while stack != [] and stack[-1][1] <= w:
+                    res = max(res, j - stack.pop()[0])
+
+            return res
+
+衍生
+
+-   1124 找到满足某个条件的最长substring的长度
+-   962 找到 `\max\{j - i | a_i \leq a_j, 0 \leq i < j \leq n - 1\}`
+
 二分搜索
 -------
 
@@ -897,9 +931,34 @@ array变成链表
 
 这样 ``nums[i: j]`` 的和就是 ``integral[j] - integral[i]`` 。
 
+再结合 ``set`` 或者 ``Counter`` 就能实现快速查找是否存在substring的和满足某个条件
+
+.. code:: python
+
+    # 摘自560
+
+    class Solution:
+        def subarraySum(self, nums: List[int], k: int) -> int:
+            integral = [0] + list(itertools.accumulate(nums)) # 做积分
+            counter = collections.Counter(integral) # 数每个积分项出现的次数
+            res = 0
+
+            for v in integral: # 遍历积分项
+                counter[v] -= 1 # 排除当前积分项
+                res += counter[v + k] # 查后面后多少项正好是当前项加上k
+
+            return res
+
 衍生
 
 -   976 有多少个substring的和是K的倍数
+-   560 有多少个substring的和是K
+-   327 有多少个substring的和在某个interval内
+-   523 是否存在一个长度至少为2的substring的和是K的倍数
+-   1013 有可能把一个array分成三段各自累加和相同的substring吗
+-   525 含有等量0和1的substring的最大长度
+
+.. note:: 这种方法又叫前缀和 aka. prefix sum。
 
 无向图中判断两个节点之间是否有路径联通
 --------------------------------
@@ -1027,3 +1086,83 @@ array变成链表
 衍生
 
 -   829 找n的所有奇因数
+
+把array中连续的重复元素分组
+------------------------
+
+把形如 ``aaaaabbcccc`` 的array变成 ``["aaaaa", "bb", "cccc"]`` 。
+
+.. code:: python
+
+    # 改编自443
+
+    class Solution:
+        def compress(self, characters: str) -> List[str]:
+            res = []
+            lastCharacter = characters[0] # 前一个连续的重复字符串里的字符
+            lastCharacterPosition = 0 # 前一个连续的重复字符串在原字符串里开始的位置
+
+            for i, v in enumerate(characters[1: ] + "\x00", 1): # 最后追加一个dummy char，省得出迭代之后再处理
+                if v != lastCharacter: # 发现当前字符和前面不一样了，说明上一个连续的重复字符串到这里结束了
+                    res.append(lastCharacter * (i - lastCharacterPosition))
+                    lastCharacter = v
+                    lastCharacterPosition = i
+
+            return len(res)
+
+这件事情也可以用 ``itertools.groupby()`` 来做。 ``groupby()`` 返回一个迭代器，每次 ``next()`` 返回一个tuple ``(v, it)`` ，其中 ``v`` 是重复的那个元素， ``it`` 是另一个迭代器， ``v`` 连续出现几次， ``it`` 就会返回几次 ``v`` 。有点像 ``itertools.repeat(v, v出现的次数)`` 。
+
+.. code:: python
+
+    list(map(lambda v: "".join(v[1]), itertools.groupby("aaaabbccc")))
+
+衍生
+
+-   38 数数列前一项每个元素连续出现的次数和元素连接在一起形成当前项
+-   443 数字符串里连续的重复元素来压缩字符串
+
+Diff
+------
+
+.. code:: python
+
+    # 摘自236
+
+    for i in range(min(len(routeToP), len(routeToQ))):
+        if routeToP[i].val != routeToQ[i].val:
+            return routeToP[i - 1]
+    else: # for循环顺利走完没有中途break。说明出现了包含关系
+        return routeToP[i]
+
+Tokenize
+--------
+
+.. code:: python
+
+    # 摘自224
+
+    import re
+
+    patternString = "".join([
+        r"(0|[1-9][0-9]*)", # group1 数字
+        r"|(\+|-)", # group2 加号和减号
+        r"|(\(|\))"
+        ]) # group3 括号
+    pattern = re.compile(patternString) # 编译pattern，这样会快
+    tokens = collections.deque(v.group() for v in pattern.finditer(s)) # 因为这个题里类别比较少，所以这里就不归类了，直接在evaluate的时候归类
+
+甚至还可以给类别起名字，同时得到匹配了哪个类别
+
+.. code:: python
+
+    patternString = r"(?P<Number>0|[1-9][0-9]*)" + # group1 数字
+        r"|(?P<Operator>\+|-)" + # group2 加号和减号
+        r"|(?P<LeftParenthese>\()" # group3 左括号
+        r"|(?P<RightParenthese>\))" # group4 右括号
+    pattern = re.compile(patternString)
+    tokens = [
+        (
+            v.group(), # 匹配了什么字符串
+            v.lastgroup, # 匹配了哪个类别。如果匹配到了加号，就是 'Operator'
+        ) for v in pattern.finditer(s)
+    ]
