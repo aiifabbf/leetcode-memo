@@ -397,6 +397,7 @@ array中满足某个条件的所有substring问题
 -   513 二叉树最后一层的最左边节点的值
 -   515 二叉树最后一层的最大节点值
 -   919 给完全二叉树插入节点
+-   1161 二叉树每一层的和
 
 得到二叉树的深度
 -------------
@@ -957,6 +958,8 @@ array变成链表
 -   523 是否存在一个长度至少为2的substring的和是K的倍数
 -   1013 有可能把一个array分成三段各自累加和相同的substring吗
 -   525 含有等量0和1的substring的最大长度
+-   918 循环列表里的最大substring和
+-   1171 不停的去掉链表里累加和是0的substring
 
 .. note:: 这种方法又叫前缀和 aka. prefix sum。
 
@@ -1013,6 +1016,11 @@ array变成链表
                         dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
 
             return dp[-1][-1]
+
+衍生
+
+-   1035 从奇怪的题设背景里提取出最长公共subsequence的核心问题
+-   1143 最长公共subsequence
 
 差量更新
 -------
@@ -1166,3 +1174,102 @@ Tokenize
             v.lastgroup, # 匹配了哪个类别。如果匹配到了加号，就是 'Operator'
         ) for v in pattern.finditer(s)
     ]
+
+图的广度优先搜索
+---------------
+
+衍生
+
+-   1162 离陆地距离最远的海水
+
+区间 `[1, n]` 中完全平方数的个数
+-----------------------------
+
+是 `\lfloor\sqrt{n}\rfloor` 个。
+
+.. code:: python
+
+    math.floor(math.sqrt(n))
+
+衍生
+
+-   319 最后有多少盏灯是开着的
+
+.. note:: 简单证明 `[1, n] \cup N` 中有 `\lfloor\sqrt{n}\rfloor` 个完全平方数
+
+    假设 `m^2` 是小于等于 `n` 的最大的完全平方数，那么区间 `[1, n] \cup N = {1, 2, 3, ..., n}` 当中，一定包含了
+
+    .. math::
+
+        1^2, 2^2, ... , (m - 1)^2, m^2
+
+    这些完全平方数，总共正好 `m` 个。所以接下来要探究 `m` 和 `n` 的关系。根据刚才的假设
+
+    .. math::
+
+        m^2 \leq n < (m + 1)^2
+
+    所以
+
+    .. math::
+
+        m \leq \sqrt{n} < m + 1
+
+    正好就是 `\lfloor\sqrt{n}\rfloor` 的定义。
+
+筛法
+----
+
+`O(n \ln n)` 得到 `[1, n)` 中素数的个数、或者 `[1, n)` 中某个数字是否是素数。
+
+.. code:: python
+
+    # 摘自204
+
+    class Solution:
+        def countPrimes(self, n: int) -> int:
+            if n <= 2:
+                return 0
+            else:
+                isPrime = [True] * n # isPrimes[i]用来标记i是不是素数。一开始假定全部都是素数
+                isPrime[0] = False
+                isPrime[1] = False # 0和1不考虑
+
+                for i in range(2, math.floor(math.sqrt(n)) + 1): # 从2开始遍历
+                # for i in range(2, n): # 其实不需要从2到n，到ceil(sqrt(n))就够了。为什么我也没想通
+                    if isPrime[i] == True: # 发现i是素数
+
+                        for j in range(i * i, n, i): # 遍历k * i
+                        # for j in range(i * 2, n, i): # 这里也不需要从i * 2开始，直接从i^2开始就可以了。为什么我也没想通
+                            isPrime[j] = False # 把k * i标记为非素数
+
+                return sum(isPrime)
+
+衍生
+
+-   204 数 `[1, n)` 中有多少个素数
+-   1175 把素数放到素数下标的位置
+
+取出个十百千位
+------------
+
+.. code:: python
+
+    # 摘自12
+
+    thousand = n // 1000 % 10 # 千位
+    hundred = n // 100 % 10 # 百位
+    ten = n // 10 % 10 # 十位
+    one = n // 1 % 10 # 个位
+
+推广一下，取出第 `k` 位可以用
+
+.. math::
+
+    \left\lfloor{n \over 10^k}\right\rfloor \bmod 10
+
+再推广一下，取出 `b` 进制下的第 `k` 位可以用
+
+.. math::
+
+    \left\lfloor{n \over b^k}\right\rfloor \bmod b
