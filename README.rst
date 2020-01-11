@@ -116,7 +116,7 @@ array中满足某个条件的所有substring问题
 判断一个array是不是另一个array的subsequence（可以不连续）
 --------------------------------------------------
 
-.. code:: python
+.. code-block:: python
 
     def isSubArray(subarray, array):
         pos = -1
@@ -134,7 +134,7 @@ array中满足某个条件的所有substring问题
 
 .. note:: 原来的代码
 
-    .. code:: python
+    .. code-block:: python
 
         def isSubString(substring, array):
             try:
@@ -155,7 +155,7 @@ array中满足某个条件的所有substring问题
 
 .. note:: 当然万能的Python可以一行搞定array是 ``str`` 时候的情况
 
-    .. code:: python
+    .. code-block:: python
 
         substring in array
 
@@ -167,7 +167,7 @@ array中满足某个条件的所有substring问题
 
 可以用递归
 
-.. code:: python
+.. code-block:: python
 
     # 改编自144
 
@@ -187,7 +187,7 @@ array中满足某个条件的所有substring问题
 -   速度快一点
 -   不受递归深度限制
 
-.. code:: python
+.. code-block:: python
 
     # 改编自144
 
@@ -232,7 +232,7 @@ array中满足某个条件的所有substring问题
 
 可以用递归，只要把对根节点的访问的语句放到中间就算中根遍历了。
 
-.. code:: python
+.. code-block:: python
 
     # 改编自94
 
@@ -289,7 +289,7 @@ array中满足某个条件的所有substring问题
 二叉树的后根遍历
 -------------
 
-.. code:: python
+.. code-block:: python
 
     class Solution:
         def postorderTraversal(self, root: TreeNode) -> List[int]:
@@ -305,7 +305,7 @@ array中满足某个条件的所有substring问题
 树的广度优先遍历
 -------------
 
-.. code:: python
+.. code-block:: python
 
     class Solution:
         def levelOrder(self, root: 'Node') -> None:
@@ -323,7 +323,7 @@ array中满足某个条件的所有substring问题
 
     如果想一层一层遍历，可以不要直接把下一层的所有children都放到queue里，而是暂时先放到一个临时queue里面，等这一层完了，再把临时queue整个替换掉全局的那个queue。比如下面这个例子
 
-    .. code:: python
+    .. code-block:: python
 
         class Solution:
             def maxDepth(self, root: 'Node') -> int:
@@ -341,7 +341,7 @@ array中满足某个条件的所有substring问题
 二叉树的广度优先遍历
 -----------------
 
-.. code:: python
+.. code-block:: python
 
     class Solution:
         def maxDepth(self, root: TreeNode) -> int:
@@ -363,23 +363,52 @@ array中满足某个条件的所有substring问题
 
     如果想一层一层遍历，和 `树的广度优先、按层遍历`_ 一样。
 
-    .. code:: python
+    .. code-block:: python
 
         class Solution:
             def maxDepth(self, root: TreeNode) -> int:
                 if root:
                     depth = 1
                     queue = [root]
+
                     while queue:
                         levelQueue = []
+
                         for i in queue:
                             if i.left:
                                 levelQueue.append(i.left)
                             if i.right: # 切记切记这里不是elif，是if，因为左边和右边根本没关系
                                 levelQueue.append(i.right)
+
                         depth += 1
                         queue = levelQueue
+
                     return depth
+                else:
+                    return 0
+
+    用 ``levelQueue`` 其实有点浪费的，有更高效的写法，可以重复利用同一个queue，而不是每到下一层就建个新queue。说来也非常简单（但我怎么就没想到呢），记录一下queue一开始的长度就可以了
+
+    .. code-block:: python
+
+        class Solution:
+            def maxDepth(self, root: TreeNode) -> int:
+                if root:
+                    depth = 0
+                    queue = [root]
+
+                    while queue:
+                        # queue就代表第depth层上的所有节点了
+                        length = len(queue)
+
+                        for i in range(0, length):
+                            v = queue.pop(0)
+                            if v.left:
+                                queue.append(v.left)
+                            if v.right:
+                                queue.append(v.right)
+
+                        depth += 1
                 else:
                     return 0
 
@@ -404,9 +433,9 @@ array中满足某个条件的所有substring问题
 
 以前一直是用广度优先、按层遍历来做的（104题），但是也有非常简单的写法，比如
 
-.. code:: python
+.. code-block:: python
 
-    # 摘自543
+    # 摘自104
 
     class Solution:
         def maxDepth(self, root: TreeNode) -> int:
@@ -417,10 +446,36 @@ array中满足某个条件的所有substring问题
 
 不一定比按层遍历快，但是写起来足够简单。
 
+如果用按层遍历来写，是
+
+.. code-block:: python
+
+    class Solution:
+        def maxDepth(self, root: TreeNode) -> int:
+            if root:
+                depth = 0
+                queue = collections.deque([root])
+
+                while queue:
+                    size = len(queue)
+
+                    for _ in range(0, size):
+                        v = queue.popleft()
+                        if v.left:
+                            queue.append(v.left)
+                        if v.right:
+                            queue.append(v.right)
+
+                    depth += 1
+
+                return depth
+            else:
+                return 0
+
 取得二叉树的所有叶子节点值
 ----------------------
 
-.. code:: python
+.. code-block:: python
 
     # 摘自872
 
@@ -450,7 +505,7 @@ array中满足某个条件的所有substring问题
 
 加上根节点到左边子节点、根节点到右边子节点的两条路。
 
-.. code:: python
+.. code-block:: python
 
     # 摘自257
 
@@ -477,7 +532,7 @@ array中满足某个条件的所有substring问题
 判断二叉树是不是二分搜索树（BST）
 ----------------------------
 
-.. code:: python
+.. code-block:: python
 
     # 摘自98
 
@@ -504,7 +559,7 @@ array中满足某个条件的所有substring问题
 排好序的array转换到height-balanced BST
 ------------------------------------
 
-.. code:: python
+.. code-block:: python
 
     # 摘自108
 
@@ -530,12 +585,12 @@ array中满足某个条件的所有substring问题
 
 提示一下，如果有多种元素出现的频次一样而且恰好最高，怎么写最好？
 
-.. code:: python
+.. code-block:: python
 
     # 摘自 https://leetcode.com/problems/most-frequent-subtree-sum/discuss/98675/Python-easy-understand-solution
 
     maximumFrequency = max(counter.values()) # 首先得到最高频次
-    return [i for i, v in counter.items() if v == maximumFrequency] # 再筛选出频次和最高频次一样大的元素
+    return [k for k, v in counter.items() if v == maximumFrequency] # 再筛选出频次和最高频次一样大的元素
 
 计算器
 -----
@@ -547,7 +602,7 @@ array中满足某个条件的所有substring问题
 
 做法是先排个序，然后变成tuple，然后用set套一套，再变成list。
 
-.. code:: python
+.. code-block:: python
 
     # 摘自39
 
@@ -560,7 +615,7 @@ array中满足某个条件的所有substring问题
 
 暴力做法是搜索，复杂度 :math:`O(n^2)` 。用stack可以做到 :math:`O(n)`
 
-.. code:: python
+.. code-block:: python
 
     # 摘自739
 
@@ -595,14 +650,14 @@ array中满足某个条件的所有substring问题
 遍历链表
 ----------
 
-.. code:: python
+.. code-block:: python
 
     # 改编自206
 
     class Solution:
         def reverseList(self, head: ListNode) -> ListNode:
             if head:
-                sentinel = None
+                sentinel = head
 
                 while head:
                     doSomething(head)
@@ -614,7 +669,7 @@ array中满足某个条件的所有substring问题
 
 .. note:: 颠倒链表（206题）
 
-    .. code:: python
+    .. code-block:: python
 
         class Solution:
             def reverseList(self, head: ListNode) -> ListNode:
@@ -636,7 +691,7 @@ array中满足某个条件的所有substring问题
 
     可以看做遍历链表的过程。
 
-    .. code:: python
+    .. code-block:: python
 
         # 摘自206
 
@@ -659,7 +714,7 @@ array中满足某个条件的所有substring问题
 
     此时就要用到假节点，然后再用一个previous记录head之前一个节点。
 
-    .. code:: python
+    .. code-block:: python
 
         # 摘自707
 
@@ -684,7 +739,7 @@ array中满足某个条件的所有substring问题
 array变成链表
 -------------
 
-.. code:: python
+.. code-block:: python
 
     # 摘自206
 
@@ -707,7 +762,7 @@ array变成链表
 
 如果一个数是2的多少次方，那么这个数的二进制肯定是 ``10000...`` 这种形式，此时这个数如果减1，那么会变成 ``11111...`` 这种形式。
 
-.. code:: python
+.. code-block:: python
 
     if n & (n - 1) == 0:
         return True
@@ -755,7 +810,7 @@ array变成链表
 
 用单调递增stack可以实现 :math:`O(n)` 。
 
-.. code:: python
+.. code-block:: python
 
     # 摘自907
 
@@ -778,7 +833,7 @@ array变成链表
 
 两种做法应该是可以互相转化的。
 
-.. code:: python
+.. code-block:: python
 
     # 摘自739
 
@@ -818,7 +873,7 @@ array变成链表
 从array中找到某个元素前面、离这个元素最远的、小于或等于这个元素的元素的下标
 ---------------------------------------------------------------
 
-.. code:: python
+.. code-block:: python
 
     # 摘自962
 
@@ -846,7 +901,7 @@ array变成链表
 二分搜索
 -------
 
-.. code:: python
+.. code-block:: python
 
     # 改编自 https://en.wikipedia.org/wiki/Binary_search_algorithm 的伪代码
 
@@ -867,7 +922,7 @@ array变成链表
 
 .. note:: 如果array不是严格递增的，是含有重复的，那么就涉及到返回最左边还是最右边元素下标的问题。
 
-    .. code:: python
+    .. code-block:: python
 
         # 寻找最左边最先出现的target的下标
 
@@ -891,7 +946,7 @@ array变成链表
             else:
                 return -1
 
-    .. code:: python
+    .. code-block:: python
 
         # 寻找最右边最晚出现的target的下标
 
@@ -901,10 +956,10 @@ array变成链表
 
             while left < right:
                 middle = (left + right) // 2
-                if nums[middle] <= target: # 注意这里是 <=
-                    left = middle + 1
-                else:
+                if nums[middle] > target: # 注意这里是 >
                     right = middle
+                else:
+                    left = middle + 1
 
             # 如果存在的话，right - 1就是最右边等于target的元素的下标，但是如果不存在的话你也不知道，所以判断一下为好。
             if 0 <= right - 1 <= len(nums) - 1:
@@ -925,7 +980,7 @@ array变成链表
 
 如果经常需要求 ``nums[i: j]`` 的和，可以先用 ``itertools.accumulate()`` 一次性把所有和都求出来，这样
 
-.. code:: python
+.. code-block:: python
 
     integral = [0] + list(itertools.accumulate(nums)) # 前面添一个0，这样方便很多
     assert integral[j] - integral[i] == sum(nums[i: j])
@@ -934,7 +989,7 @@ array变成链表
 
 再结合 ``set`` 或者 ``Counter`` 就能实现快速查找是否存在substring的和满足某个条件
 
-.. code:: python
+.. code-block:: python
 
     # 摘自560
 
@@ -952,7 +1007,7 @@ array变成链表
 
 衍生
 
--   976 有多少个substring的和是K的倍数
+-   974 有多少个substring的和是K的倍数
 -   560 有多少个substring的和是K
 -   327 有多少个substring的和在某个interval内
 -   523 是否存在一个长度至少为2的substring的和是K的倍数
@@ -960,15 +1015,39 @@ array变成链表
 -   525 含有等量0和1的substring的最大长度
 -   918 循环列表里的最大substring和
 -   1171 不停的去掉链表里累加和是0的substring
+-   926 数前后两半substring中 ``0`` 和 ``1`` 的个数
+-   1208 累加和小于等于K的最长substring的长度
 
 .. note:: 这种方法又叫前缀和 aka. prefix sum。
+
+二维区间求和
+----------
+
+也叫二维前缀和，是一维前缀和的推广。和一维前缀和的关系就像是一元概率分布和联合概率分布的关系。
+
+.. code-block:: python
+
+    # 摘自1314
+
+    class Solution:
+        def matrixBlockSum(self, mat: List[List[int]], K: int) -> List[List[int]]:
+            rowCount = len(mat)
+            columnCount = len(mat[0])
+            integral = [[0] * (columnCount + 1) for _ in range(rowCount + 1)]
+
+            for rowIndex in range(1, rowCount + 1):
+
+                for columnIndex in range(1, columnCount + 1):
+                    integral[rowIndex][columnIndex] = mat[rowIndex - 1][columnIndex - 1] + integral[rowIndex - 1][columnIndex] + integral[rowIndex][columnIndex - 1] - integral[rowIndex - 1][columnIndex - 1]
+
+            ...
 
 无向图中判断两个节点之间是否有路径联通
 --------------------------------
 
 就是union find。首先需要一个dict或者array来存节点之间的连接关系，在 ``(key, value)`` 中， ``key`` 表示节点， ``value`` 表示这个节点的父节点。如果两个节点在同一个树中，说明它们之间有路径联通。判断两个节点是否在同一个树中的问题可以等效为判断两个节点所在的树的根节点是否是同一个节点的问题。
 
-.. code:: python
+.. code-block:: python
 
     # 改编自1020
 
@@ -989,6 +1068,25 @@ array变成链表
 
             return r
 
+还有一些用法，比如得到每个组里的所有节点
+
+.. code-block:: python
+
+    # 改编自1202
+
+    rootClusterMapping = {}
+
+    for k, v in mapping.items():
+        v = self.root(mapping, v)
+        if v not in rootClusterMapping:
+            rootClusterMapping[v] = {k}
+        else:
+            rootClusterMapping[v].add(k)
+
+这样就得到了一个 ``dict`` ，其中key是每个组的root，value是一个 ``set`` ，表示这个组包含的所有节点。
+
+再用 ``rootClusterMapping.values()`` 就得到了每个连通区域里的所有节点了。
+
 衍生
 
 -   200 孤立岛屿的个数
@@ -997,7 +1095,7 @@ array变成链表
 最长公共subsequence
 ------------------
 
-.. code:: python
+.. code-block:: python
 
     # 摘自1035
 
@@ -1028,14 +1126,20 @@ array变成链表
 假设窗口的长度是k，移动到第i个格子的时候，要
 
 -   减去第i-1个格子的delta
--   加上第i-1+k个各自的delta
+-   加上第i-1+k个格子的delta
+
+比较恶心的是必须要处理初始条件。当然也可以不处理初始条件，不过之后你就要处理烂尾条件。
+
+衍生
+
+-   239 摘取长度为k的窗口里的最大数字
 
 进制转换
 -------
 
 思路就是不停地整除，每次取商再整除，最后把每次整除得到的余数倒过来排列。
 
-.. code:: python
+.. code-block:: python
 
     # 摘自504
 
@@ -1057,7 +1161,7 @@ array变成链表
 找到直方图里的第n个数
 ------------------
 
-.. code:: python
+.. code-block:: python
 
     # 改编自1093
 
@@ -1077,7 +1181,7 @@ array变成链表
 
 但是因为因数都是成对出现的 [#]_ ，也就是说如果找到了一个因数 `k` ，那么 `n / k` 也必然是n的一个因数（注意判断是否重复），所以没有必要遍历到n。从1遍历到 `\lceil\sqrt{n}\rceil` 就够了。复杂度 `O(\ln n)` 。
 
-.. code:: python
+.. code-block:: python
 
     def divisors(n: int) -> set:
         factors = {} # 用set可以过滤掉重复的因数
@@ -1100,7 +1204,7 @@ array变成链表
 
 把形如 ``aaaaabbcccc`` 的array变成 ``["aaaaa", "bb", "cccc"]`` 。
 
-.. code:: python
+.. code-block:: python
 
     # 改编自443
 
@@ -1120,7 +1224,7 @@ array变成链表
 
 这件事情也可以用 ``itertools.groupby()`` 来做。 ``groupby()`` 返回一个迭代器，每次 ``next()`` 返回一个tuple ``(v, it)`` ，其中 ``v`` 是重复的那个元素， ``it`` 是另一个迭代器， ``v`` 连续出现几次， ``it`` 就会返回几次 ``v`` 。有点像 ``itertools.repeat(v, v出现的次数)`` 。
 
-.. code:: python
+.. code-block:: python
 
     list(map(lambda v: "".join(v[1]), itertools.groupby("aaaabbccc")))
 
@@ -1132,7 +1236,7 @@ array变成链表
 Diff
 ------
 
-.. code:: python
+.. code-block:: python
 
     # 摘自236
 
@@ -1145,7 +1249,7 @@ Diff
 Tokenize
 --------
 
-.. code:: python
+.. code-block:: python
 
     # 摘自224
 
@@ -1161,7 +1265,7 @@ Tokenize
 
 甚至还可以给类别起名字，同时得到匹配了哪个类别
 
-.. code:: python
+.. code-block:: python
 
     patternString = r"(?P<Number>0|[1-9][0-9]*)" + # group1 数字
         r"|(?P<Operator>\+|-)" + # group2 加号和减号
@@ -1178,16 +1282,140 @@ Tokenize
 图的广度优先搜索
 ---------------
 
+和二叉树的广度优先搜索差不多的，因为二叉树本质上也算一个图。不同之处在于，二叉树是树，是不含循环的，所以不需要处理重复遍历的问题，但是图需要当心重复遍历的问题。
+
+解决办法非常简单，就是额外维护一个集合，用来记录已经遍历到的节点
+
+.. code-block:: python
+
+    # 改编自863
+
+    class Solution:
+        def distanceK(self, root: TreeNode, target: TreeNode, K: int):
+            graph = {} # 这里假设图已经按照关联列表的方式存好了，key是节点，value是和这个节点直接相连的节点集合
+            queue = collections.deque([root]) # 将要遍历的节点
+            traveled = set() # 已经遍历过的节点
+            distance = 0
+
+            while queue:
+                # 运行到这里的时候，queue里就是距离起点正好是distance的所有节点
+                length = len(queue)
+
+                for _ in range(0, length):
+                    v = queue.popleft() # 遍历到当前节点了
+                    queue.extend(filter(lambda v: v not in traveled, graph.get(v, set()))) # 可能v不和任何节点直接相连，所以要处理不存在key的情况
+                    # 这里可以对当前节点做其他事情
+                    traveled.add(v) # 做完之后，表明当前节点已经被遍历过了，加入已遍历节点集合，防止下次重复遍历
+
+                distance += 1
+
+            return list(queue)
+
+和二叉树的广度优先、按层遍历的代码高度相似。
+
 衍生
 
 -   1162 离陆地距离最远的海水
+-   934 两个岛之间造最短的桥
+-   133 复制图
+
+图的深度优先搜索
+---------------
+
+
+
+``Node`` 形式表示的图转换成关联集合表示的图
+--------------------------------------
+
+所谓 ``Node`` 形式就是整个图用一个初始节点表示
+
+.. code-block:: python
+
+    class Node:
+        def __init__(self, val: int, neighbors: List[Node]):
+            self.val = val
+            self.neighbors = neighbors
+
+如要转换成类似
+
+::
+
+    {
+        1: {2, 4},
+        2: {1, 3},
+        3: {2, 4},
+        4: {1, 3}
+    }
+
+这样的 `关联列表 <https://www.python.org/doc/essays/graphs/>`_ 表示的图，可以用广度优先来做
+
+.. code-block:: python
+
+    # 改编自133
+
+    class Solution:
+        def nodeToGraph(self, node: Node) -> dict:
+            if node:
+                graph = {}
+                queue = collections.deque([node])
+                traveled = set()
+
+                while queue:
+                    length = len(queue)
+
+                    for _ in range(0, length):
+                        node = queue.popleft()
+                        graph[node.val] = set(map(lambda n: n.val, node.neighbors))
+
+                        for neighbor in node.neighbors:
+                            if neighbor.val not in traveled:
+                                queue.append(neighbor)
+                        # 也可以写成
+                        # queue.extend(filter(lambda n: n.val not in traveled, node.neighbors))
+
+                        traveled.add(node.val)
+
+                return graph
+            else:
+                return {}
+
+.. note:: 我觉得关联 **列表** 这个说法很有问题，用列表来存和某个节点相连的节点的做法也很有问题，比如
+
+    ::
+
+        {
+            1: [2, 4],
+            2: [1, 3],
+            3: [2, 4],
+            4: [1, 3]
+        }
+
+    因为和某个节点相连的其他节点其实并没有什么先后顺序。所以我觉得更好的方法是关联 **集合** 而不是关联列表。
+
+    如果非要用列表的话（比如133强制要求你复制后的图里 ``neighbors`` 顺序和原节点一模一样），也超级简单啊，把
+
+    .. code-block:: python
+
+        graph[node.val] = set(map(lambda n: n.val, node.neighbors))
+
+    改成
+
+    .. code-block:: python
+
+        graph[node.val] = list(map(lambda n: n.val, node.neighbors))
+
+    就好了。
+
+衍生
+
+-   133 复制图
 
 区间 `[1, n]` 中完全平方数的个数
 -----------------------------
 
 是 `\lfloor\sqrt{n}\rfloor` 个。
 
-.. code:: python
+.. code-block:: python
 
     math.floor(math.sqrt(n))
 
@@ -1222,7 +1450,7 @@ Tokenize
 
 `O(n \ln n)` 得到 `[1, n)` 中素数的个数、或者 `[1, n)` 中某个数字是否是素数。
 
-.. code:: python
+.. code-block:: python
 
     # 摘自204
 
@@ -1253,7 +1481,7 @@ Tokenize
 取出个十百千位
 ------------
 
-.. code:: python
+.. code-block:: python
 
     # 摘自12
 
@@ -1273,3 +1501,23 @@ Tokenize
 .. math::
 
     \left\lfloor{n \over b^k}\right\rfloor \bmod b
+
+前缀树
+------
+
+节点的定义
+
+.. code-block:: python
+
+    class Node:
+        def __init__(self):
+            self.children: Dict[str, Node] = {}
+            self.value: Any = None
+
+后缀列表
+-------
+
+一个长度为 `n` 的字符串 ``s`` 的排名列表 ``ranks[i]`` 表示以第 `i` 个字符开始、到最后的后缀在所有后缀里面、按字典序从小到大排序排第 ``ranks[i]`` 。
+
+怎么构造呢？有个叫做 `倍增构造法 <https://www.cnblogs.com/SGCollin/p/9974557.html>`_ 的算法。
+
