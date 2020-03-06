@@ -1,4 +1,4 @@
-/* 
+/*
 用rust又做了一遍。主要想练习一下rust里trait、impl的写法。
 */
 
@@ -8,29 +8,30 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
 
-trait UnionFindGraph<T> {
-    fn root(&self, p: T) -> T;
-    fn isConnected(&self, p: T, q: T) -> bool;
+trait UnionFindGraph<'a, T> {
+    fn root(&'a self, p: &'a T) -> &'a T; // 强行把这个从T变成&T，但其实对于Copy来说，T和&T性能上没什么差别……
+    fn isConnected(&'a self, p: &'a T, q: &'a T) -> bool; // 就当练习一下lifetime吧……
     fn union(&mut self, p: T, q: T);
 } // 这边我不知道怎么把参数从T变成&T
 
-impl<T> UnionFindGraph<T> for HashMap<T, T>
+impl<'a, T> UnionFindGraph<'a, T> for HashMap<T, T>
 where
     T: Hash + Eq + Copy, // 这里也是，不知道怎么去掉Copy
 {
-    fn root(&self, p: T) -> T { // 这里是python里不同的写法。python里面可以在root()里面一边找root、一边优化图结构，但是这里不行，只能只读。
+    fn root(&'a self, p: &'a T) -> &'a T {
+        // 这里是python里不同的写法。python里面可以在root()里面一边找root、一边优化图结构，但是这里不行，只能只读。
         let mut p = p;
 
-        while *self.get(&p).unwrap() != p {
-            p = *self.get(&p).unwrap();
+        while self.get(p).unwrap() != p {
+            p = self.get(p).unwrap();
         }
 
         return p;
     }
 
-    fn isConnected(&self, p: T, q: T) -> bool {
-        let rootOfP: T = self.root(p);
-        let rootOfQ: T = self.root(q);
+    fn isConnected(&'a self, p: &'a T, q: &'a T) -> bool {
+        let rootOfP = self.root(p);
+        let rootOfQ = self.root(q);
 
         return rootOfP == rootOfQ;
     }
@@ -76,8 +77,8 @@ impl Solution {
         let mut rootClusterMapping: HashMap<i32, HashSet<i32>> = HashMap::new();
 
         for k in graph.keys() {
-            let root = graph.root(*k); // 这里就是不能在root()里优化图的原因。因为如果要在root()里面优化图，必须传一个&mut self进去，可是for循环外面取了一次&self，这里会说不能同时取得可变和不可变引用
-            let cluster = rootClusterMapping.entry(root).or_insert(HashSet::new());
+            let root = graph.root(k); // 这里就是不能在root()里优化图的原因。因为如果要在root()里面优化图，必须传一个&mut self进去，可是for循环外面取了一次&self，这里会说不能同时取得可变和不可变引用
+            let cluster = rootClusterMapping.entry(*root).or_insert(HashSet::new());
             cluster.insert(*k);
         }
 
@@ -86,14 +87,13 @@ impl Solution {
         for cluster in rootClusterMapping.values() {
             let mut cluster: Vec<usize> = cluster.iter().map(|v| *v as usize).collect();
             cluster.sort();
-            let mut charsInThisCluster: Vec<char> = cluster.iter()
-                .map(|i| string[*i])
-                .collect();
+            let mut charsInThisCluster: Vec<char> = cluster.iter().map(|i| string[*i]).collect();
             charsInThisCluster.sort();
 
             // println!("{:?}", charsInThisCluster);
 
-            cluster.iter()
+            cluster
+                .iter()
                 .zip(charsInThisCluster.iter())
                 .for_each(|(i, v)| {
                     *string.get_mut(*i).unwrap() = *v;
