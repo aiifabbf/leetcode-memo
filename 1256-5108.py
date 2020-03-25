@@ -61,7 +61,7 @@ class Solution:
         #     length = int(2 ** n).bit_length()
         #     return "{:0>30}".format(bin(num - 2 ** n + 1)[2: ])[- length + 1: ]
 
-        return bin(num)[3: ] # 居然是这么简单的规律，输了输了
+        return bin(num + 1)[3: ] # 居然是这么简单的规律，输了输了
 
 s = Solution()
 print(s.encode(0)) # ""
