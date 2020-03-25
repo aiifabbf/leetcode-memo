@@ -267,6 +267,8 @@ array中满足某个条件的所有substring问题
 
     但是如果中根遍历路径和先根遍历路径同时给出（105题）、或者中根遍历路径和后根遍历路径同时给出（106题），就可以还原出树本来的结构。
 
+    如果只给先根和后根，却不能唯一确定一个二叉树。这是很奇怪的事情。我也不知道为什么。
+
     以中根遍历路径和先根遍历路径为例，
 
     1.  中根遍历路径的第一个元素肯定是根节点的值。
@@ -301,6 +303,34 @@ array中满足某个条件的所有substring问题
                 doSomthing(root.val)
             else:
                 pass
+
+那么后根遍历能不能不用递归呢？可以的。只需要把前根遍历的迭代做法稍加改动就可以了
+
+-   前根遍历迭代做法里面，是先放 ``right`` 、再放 ``left`` ，这里改成先放 ``left`` 、再放 ``right``
+-   最后把结果颠倒一下
+
+.. code-block:: python
+
+    摘自145
+
+    class Solution:
+        def postorderTraversal(self, root: TreeNode) -> List[int]:
+            if root:
+                stack = [root]
+                res = []
+
+                while stack:
+                    node = stack.pop()
+                    if node.left:
+                        stack.append(node.left)
+                    if node.right:
+                        stack.append(node.right)
+
+                    res.append(node)
+
+                return res[:: -1]
+            else:
+                return []
 
 树的广度优先遍历
 -------------
@@ -1017,6 +1047,7 @@ array变成链表
 -   1171 不停的去掉链表里累加和是0的substring
 -   926 数前后两半substring中 ``0`` 和 ``1`` 的个数
 -   1208 累加和小于等于K的最长substring的长度
+-   930 有多少个和是S的非空substring
 
 .. note:: 这种方法又叫前缀和 aka. prefix sum。
 
@@ -1318,6 +1349,7 @@ Tokenize
 -   1162 离陆地距离最远的海水
 -   934 两个岛之间造最短的桥
 -   133 复制图
+-   127 转换几次才能转换到那个词
 
 图的深度优先搜索
 ---------------
@@ -1520,4 +1552,51 @@ Tokenize
 一个长度为 `n` 的字符串 ``s`` 的排名列表 ``ranks[i]`` 表示以第 `i` 个字符开始、到最后的后缀在所有后缀里面、按字典序从小到大排序排第 ``ranks[i]`` 。
 
 怎么构造呢？有个叫做 `倍增构造法 <https://www.cnblogs.com/SGCollin/p/9974557.html>`_ 的算法。
+
+线性时间、无额外空间、把array里某些元素全部移动到最后面
+------------------------------------------------
+
+这个问题叫 `荷兰国旗问题 <https://en.wikipedia.org/wiki/Dutch_national_flag_problem>`_ ，不过我把这个问题叫做“荷叶上的水滴合并”问题哈哈。我自己觉得比什么国旗形象多了。
+
+比如你有个array
+
+::
+
+    0, 0, 0, 0, 3
+
+你想把所有的 ``0`` 都移到array的最后面，如果用暴力的话，就是pop第一个 ``0`` 、push到最后、pop下面一个 ``0`` 、push到最后……array的缺点是pop中间某个元素，后面的元素全部都要顺次往前移动一格，这样复杂度就是 `O(n ^ 2)` 了。
+
+很简单，用 ``left, right`` 表示全 ``0`` 水滴的边界，然后慢慢往后边移动就可以了，期间遇到 ``0`` 就吸收、遇到非 ``0`` 就和水滴最左边的元素交换。
+
+.. code-block:: python
+
+    # 摘自283
+
+    class Solution:
+        def moveZeroes(self, nums: List[int]) -> None:
+            """
+            Do not return anything, modify nums in-place instead.
+            """
+            if len(nums) >= 1:
+                left = 0 # 水滴的左边界。左闭
+                right = 0 # 水滴的右边界。右开
+
+                while right < len(nums):
+                    if nums[right] == 0: # 遇到0
+                        right += 1 # 吸收
+                    elif nums[right] != 0: # 遇到非0
+                        nums[left], nums[right] = nums[right], nums[left] # 把右边的非0数和水滴的第一个数字交换位置
+                        left += 1
+                        right += 1 # 更新水滴边界
+
+            else:
+                return
+
+衍生
+
+-   283 把array里所有的0都移动到array的最后面
+-   75  给只含有 ``0, 1, 2`` 的array从小到大排序
+
+滑动窗口
+--------
 
