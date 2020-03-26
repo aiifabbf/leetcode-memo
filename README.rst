@@ -1073,6 +1073,39 @@ array变成链表
 
             ...
 
+衍生
+
+-   304  计算子矩阵的和
+-   1314 计算以某个点为中心的子矩阵的和
+-   1074 有多少个子矩阵的和是target
+
+累积最值
+-------
+
+Cumulative sum。
+
+前缀和还可以进一步发挥想象力，可以不止做前缀“和”，还可以前缀最大值、后缀最大值。比如 ``maximumBefore[i]`` 定义为 ``array[: i]`` 里的最大值， ``minimumAfter[i]`` 定义为 ``array[i: ]`` 里的最大值。
+
+.. code-block:: python
+
+    # 摘自42
+
+    maximumBefore = [0] # maximumBefore[i]是array[: i]里的最大值
+
+    for v in array:
+        maximumBefore.append(max(maximumBefore[-1], v))
+
+    maximumAfter = [0] # maximumAfter[i]是array[i: ]里的最大值
+
+    for v in reversed(array):
+        maximumAfter.append(max(maximumAfter[-1], v))
+
+    maximumAfter.reverse() # 最后要颠倒一下
+
+衍生
+
+-   42  接雨水
+
 无向图中判断两个节点之间是否有路径联通
 --------------------------------
 
@@ -1354,7 +1387,7 @@ Tokenize
 图的深度优先搜索
 ---------------
 
-
+把queue换成stack就好了。
 
 ``Node`` 形式表示的图转换成关联集合表示的图
 --------------------------------------
