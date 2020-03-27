@@ -1630,6 +1630,66 @@ Tokenize
 -   283 把array里所有的0都移动到array的最后面
 -   75  给只含有 ``0, 1, 2`` 的array从小到大排序
 
-滑动窗口
---------
+固定长度的滑动窗口
+----------------
 
+.. note:: 我发现有些人把双指针也叫做滑动窗口……也有道理吧， ``left, right`` 限制住的区域确实能看成一个窗口，但是我不太喜欢这样叫。双指针就是双指针嘛，本质上是greedy。滑动窗口的窗口长度是固定的，不变的。
+
+假设array的长度是 `n` ，窗口的长度是 `k` 。那么
+
+-   初始窗口里所有元素下标的范围是 `[0, k)`
+-   窗口左边界的范围是 `[0, n - k + 1)`
+
+    为啥是这样呢，因为最靠右的窗口的右边界正好是 `n` ，窗口长度是 `k` ，所以最靠右的窗口的左边界是 `n - k` 。
+
+窗口边界往右移动一格之后，需要更新窗口，这时候新窗口相对于旧窗口的diff是
+
+-   删除 ``array[i - 1]``
+-   加入 ``array[i - 1 + k]``
+
+画个图就很清楚
+
+::
+
+    [________)
+    i - 1    i - 1 + k
+      [________)
+      i        i + k
+
+.. code-block:: python
+
+    # 摘自239
+
+    queue = collections.deque() # queue里面存(array[i], i)。每次从最前面取出最大值的时候，都要检查一下这个最大值到底是不是当前窗口里的，所以一定要存i
+
+    for i, v in enumerate(nums[: k]): # 初始窗口里元素下标范围是[0, k)
+
+        while queue:
+            if queue[-1][0] < v:
+                queue.pop()
+            else:
+                break
+
+        queue.append((v, i))
+
+    res = [queue[0][0]] # 初始窗口里的最大值
+
+    for i in range(1, len(nums) - k + 1): # 窗口左边界的范围是[1, n - k]
+        v = nums[i + k - 1] # 新加的元素
+
+        while queue:
+            if queue[-1][0] < v:
+                queue.pop()
+            else:
+                break
+
+        queue.append((v, i + k - 1))
+
+        while queue:
+            if queue[0][1] >= i:
+                res.append(queue[0][0])
+                break
+            else:
+                queue.popleft()
+
+我知道这里初始窗口和后面的循环有时候会有重复代码，但是我也不知道怎么去掉。还是不要去掉了，这样比较符合直觉。
