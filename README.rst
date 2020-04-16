@@ -227,6 +227,11 @@ array中满足某个条件的所有substring问题
 
     都是不知道的。
 
+衍生
+
+-   255 验证是否是二分搜索树的先根遍历
+-   331 验证是否是先根遍历路径
+
 二叉树的中根遍历
 -------------
 
@@ -586,6 +591,18 @@ array中满足某个条件的所有substring问题
             else: # 空树是BST
                 return True
 
+更简单的方法是，中根遍历这个树，看遍历结果是不是严格递增的。
+
+.. note:: 似乎BST和二叉树中根遍历严格递增是充要条件。但是我没法证明。
+
+    BST推出中根遍历严格递增肯定是对的。
+
+    中根遍历严格递增能不能推出BST我真的不知道。能否举一个中根遍历严格递增但是却不是BST的例子呢？好像举不出例子。
+
+    `维基百科 <https://en.wikipedia.org/wiki/Binary_search_tree#Verification>`_ 上也说了中根遍历可以用来验证BST。
+
+    说明这两个确实是充要条件。惊了。
+
 排好序的array转换到height-balanced BST
 ------------------------------------
 
@@ -696,6 +713,20 @@ array中满足某个条件的所有substring问题
                 return sentinel
             else:
                 return None
+
+得到链表的第 `k` 个节点
+
+.. code-block:: python
+
+    # 摘自876
+
+    let head = origin;
+
+    for _ in 0..k {
+        head = head.unwrap().next;
+    }
+
+    return head;
 
 .. note:: 颠倒链表（206题）
 
@@ -931,74 +962,54 @@ array变成链表
 二分搜索
 -------
 
+在从小到大拍好序的array里找到一个位置插入 ``target`` ，使得插入 ``target`` 之后，整个array仍然是从小到大排好序的。
+
+不管什么情况，求的都是这个 **插入位置** ，不是元素位置。这样可以少很多麻烦。
+
 .. code-block:: python
 
-    # 改编自 https://en.wikipedia.org/wiki/Binary_search_algorithm 的伪代码
+    # 找到最左的插入位置
 
-    def binarySearch(nums: List[int], target: int) -> int:
+    def bisectLeft(array: List[Type], target: Type) -> int:
         left = 0
-        right = len(nums)
+        right = len(array)
 
         while left < right:
             middle = (left + right) // 2
-            if nums[middle] < target:
-                left = middle + 1
-            elif nums[middle] > target:
+            if array[middle] == target:
                 right = middle
-            else: # 可以加一行这个提前退出
-                return middle
+            elif array[middle] < target:
+                left = middle + 1
+            elif array[middle] > target:
+                right = middle
 
-        return -1
+        return left
 
-.. note:: 如果array不是严格递增的，是含有重复的，那么就涉及到返回最左边还是最右边元素下标的问题。
+    # 找到最右的插入位置
 
-    .. code-block:: python
+    def bisectRight(array: List[Type], target: Type) -> int:
+        left = 0
+        right = len(array)
 
-        # 寻找最左边最先出现的target的下标
+        while left < right:
+            middle = (left + right) // 2
+            if array[middle] == target:
+                left = middle + 1 # 区别
+            elif array[middle] < target:
+                left = middle + 1
+            elif array[middle] > target:
+                right = middle
 
-        def binarySearchLeftmost(nums: List[int], target: int) -> int:
-            left = 0
-            right = len(nums)
+        return right # 这里left、right都行，反正相等
 
-            while left < right:
-                middle = (left + right) // 2
-                if nums[middle] < target: # 注意这里是 <
-                    left = middle + 1
-                else:
-                    right = middle
+总结一下
 
-            # 如果存在的话，left就是最左边等于target的元素的下标，但是如果不存在的话你也不知道，所以要判断一下。
-            if 0 <= left <= len(nums) - 1: # 防止越界
-                if nums[left] == target:
-                    return left
-                else:
-                    return -1
-            else:
-                return -1
+-   如果 ``array[middle] < target`` ，一定收紧左边，所以 ``left = middle + 1``
+-   如果 ``array[middle] > target`` ，一定收紧右边，所以 ``right = middle``
+-   如果 ``array[middle] == target`` ，看情况
 
-    .. code-block:: python
-
-        # 寻找最右边最晚出现的target的下标
-
-        def binarySearchRightmost(nums: List[int], target: int) -> int:
-            left = 0
-            right = len(nums)
-
-            while left < right:
-                middle = (left + right) // 2
-                if nums[middle] > target: # 注意这里是 >
-                    right = middle
-                else:
-                    left = middle + 1
-
-            # 如果存在的话，right - 1就是最右边等于target的元素的下标，但是如果不存在的话你也不知道，所以判断一下为好。
-            if 0 <= right - 1 <= len(nums) - 1:
-                if nums[right - 1] == target:
-                    return right - 1
-                else:
-                    return -1
-            else:
-                return -1
+    -   如果是要找到最左插入位置，那么收紧右边
+    -   如果是要找到最右插入位置，那么收紧左边
 
 衍生
 
@@ -1050,6 +1061,7 @@ array变成链表
 -   930 有多少个和是S的非空substring
 -   1371 含有偶数个元音字母的最长substring
 -   1310 快速计算任意substring的累积xor
+-   303 计算任意substring的累加和
 
 .. note:: 这种方法又叫前缀和 aka. prefix sum。
 
@@ -1081,10 +1093,8 @@ array变成链表
 -   1314 计算以某个点为中心的子矩阵的和
 -   1074 有多少个子矩阵的和是target
 
-累积最值
--------
-
-Cumulative sum。
+广义的区间累积/前缀和
+------------------
 
 前缀和还可以进一步发挥想象力，可以不止做前缀“和”，还可以前缀最大值、后缀最大值。比如 ``maximumBefore[i]`` 定义为 ``array[: i]`` 里的最大值， ``minimumAfter[i]`` 定义为 ``array[i: ]`` 里的最大值。
 
@@ -1104,9 +1114,12 @@ Cumulative sum。
 
     maximumAfter.reverse() # 最后要颠倒一下
 
+甚至还可以前缀xor、累积xor。太疯狂了。
+
 衍生
 
 -   42  接雨水
+-   1310 求任意substring的累积xor
 
 无向图中判断两个节点之间是否有路径联通
 --------------------------------
@@ -1700,6 +1713,7 @@ Tokenize
 -   3   不含重复字符的最长substring
 -   424 最多 `k` 次修改机会，能得到多长的、所有字符都一样的substring
 -   1004 最多 `k` 次修改机会，能得到多长的、全是1的substring
+-   992 有多少个substring中出现了 `k` 种元素
 
 KMP
 -----
