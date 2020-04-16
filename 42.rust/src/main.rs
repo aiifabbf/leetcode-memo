@@ -44,7 +44,7 @@ impl Solution {
             .iter()
             .chain(height.iter())
             .scan(0, |state, v| {
-                if *v > *state {
+                if v > state {
                     *state = *v;
                 }
                 return Some(*state);
