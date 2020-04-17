@@ -8,13 +8,13 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
 
-trait UnionFindGraph<'a, T> {
+trait UnionFind<'a, T> {
     fn root(&'a self, p: &'a T) -> &'a T; // 强行把这个从T变成&T，但其实对于Copy来说，T和&T性能上没什么差别……
     fn isConnected(&'a self, p: &'a T, q: &'a T) -> bool; // 就当练习一下lifetime吧……
     fn union(&mut self, p: T, q: T);
 } // 这边我不知道怎么把参数从T变成&T
 
-impl<'a, T> UnionFindGraph<'a, T> for HashMap<T, T>
+impl<'a, T> UnionFind<'a, T> for HashMap<T, T>
 where
     T: Hash + Eq + Copy, // 这里也是，不知道怎么去掉Copy
 {
