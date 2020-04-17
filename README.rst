@@ -1166,9 +1166,73 @@ array变成链表
 
 再用 ``rootClusterMapping.values()`` 就得到了每个连通区域里的所有节点了。
 
+.. note:: 写了个Rust版的……好难写，我也不知道有没有更好的写法。给hash map加方法真爽啊。
+
+    .. code-block:: rust
+
+        // 摘自1202
+
+        trait UnionFind<'a, T> {
+            fn root(&'a self, p: &'a T) -> &'a T; // 强行把这个从T变成&T，但其实对于Copy来说，T和&T性能上没什么差别……
+            fn isConnected(&'a self, p: &'a T, q: &'a T) -> bool; // 就当练习一下lifetime吧……
+            fn union(&mut self, p: T, q: T);
+        } // 这边我不知道怎么把参数从T变成&T
+
+        impl<'a, T> UnionFind<'a, T> for HashMap<T, T>
+        where
+            T: Hash + Eq + Copy, // 这里也是，不知道怎么去掉Copy
+        {
+            fn root(&'a self, p: &'a T) -> &'a T {
+                // 这里是python里不同的写法。python里面可以在root()里面一边找root、一边优化图结构，但是这里不行，只能只读。
+                let mut p = p;
+
+                while self.get(p).unwrap() != p {
+                    p = self.get(p).unwrap();
+                }
+
+                return p;
+            }
+
+            fn isConnected(&'a self, p: &'a T, q: &'a T) -> bool {
+                let rootOfP = self.root(p);
+                let rootOfQ = self.root(q);
+
+                return rootOfP == rootOfQ;
+            }
+
+            fn union(&mut self, p: T, q: T) { // 所以把优化图结构的事情移到了这里，不知道这个对性能有什么影响
+                let mut p = p;
+
+                while *self.get(&p).unwrap() != p {
+                    self.insert(p, *self.get(self.get(&p).unwrap()).unwrap()); // 这一行写的真的很难看，不知道有没有更好的写法
+                    p = *self.get(&p).unwrap();
+                }
+
+                let rootOfP = p;
+                let mut q = q;
+
+                while *self.get(&q).unwrap() != q {
+                    self.insert(q, *self.get(self.get(&q).unwrap()).unwrap());
+                    q = *self.get(&q).unwrap();
+                }
+
+                let rootOfQ = q;
+
+                *self.get_mut(&rootOfP).unwrap() = rootOfQ;
+            }
+        }
+
 衍生
 
 -   200 孤立岛屿的个数
+-   130 矩阵里所有不和边界连通的 ``O`` 变成 ``X``
+-   547 有多少个朋友圈
+-   684 冗余连接
+-   934 造一座连接两个岛的最短的桥
+-   990 方程组、不等式组是否有解
+-   1020 有多少个格子能走到地图边界
+-   1036 巨大的地图里能否从起点走到终点
+-   1202 互换字符能得到的最小字典序的字符串
 -   1034 描出边界
 
 最长公共subsequence
