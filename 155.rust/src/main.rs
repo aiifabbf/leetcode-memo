@@ -34,6 +34,7 @@ impl MinStack {
             self.cumulativeMinimum
                 .push(min(x, self.cumulativeMinimum.last().cloned().unwrap()));
         }
+        // self.cumulativeMinimum.push(min(x, self.cumulativeMinimum.last().cloned().unwrap_or(x))); // 这样写是不是更好呢。不知道怎么变慢了
     }
 
     fn pop(&mut self) {
