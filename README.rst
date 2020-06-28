@@ -1131,20 +1131,20 @@ array变成链表
 
     # 改编自1020
 
-    class Solution:
-        def union(self, mapping: dict, p: Type, q: Type) -> None: # 建立连接关系
-            rootOfP = self.root(mapping, p) # 找到p所在树的根节点
-            rootOfQ = self.root(mapping, q) # 找到q所在树的根节点
-            mapping[rootOfP] = rootOfQ # 把p所在的树的根节点贴到q所在的树的根节点上
+    class UnionFindGraph(dict):
+        def union(self, p: Hashable, q: Hashable): # 建立连接关系
+            rootOfP = self.root(p) # 找到p所在树的根节点
+            rootOfQ = self.root(q) # 找到q所在树的根节点
+            self[rootOfP] = rootOfQ # 把p所在的树的根节点贴到q所在的树的根节点上
 
-        def isConnected(self, mapping: dict, p: Type, q: Type) -> bool: # 判断两个节点之间是否存在路径相连
-            return self.root(mapping, p) == self.root(mapping, q) # 只要判断两个节点是否在同一个树里就可以了，等效为判断两个节点所在树的根节点是否是同一个节点
+        def isConnected(self, p: Hashable, q: Hashable) -> bool: # 判断两个节点之间是否存在路径相连
+            return self.root(p) == self.root(q) # 只要判断两个节点是否在同一个树里就可以了，等效为判断两个节点所在树的根节点是否是同一个节点
 
-        def root(self, mapping: dict, r: Type) -> Type: # 得到某个节点所在树的根节点
+        def root(self, r: Hashable) -> Hashable: # 得到某个节点所在树的根节点
 
-            while r != mapping[r]: # 如果当前节点的父节点不是自身，说明当前节点不是根节点
-                mapping[r] = mapping[mapping[r]] # 这一句话是避免树过深的关键
-                r = mapping[r]
+            while r != self[r]: # 如果当前节点的父节点不是自身，说明当前节点不是根节点
+                self[r] = self[self[r]] # 这一句话是避免树过深的关键
+                r = self[r]
 
             return r
 
@@ -1907,3 +1907,43 @@ KMP
 回溯
 -----
 
+有向图中是否有环
+--------------
+
+试图拓扑排序，如果拓扑排序不能成功，说明有环，否则没环。
+
+.. code-block:: python
+
+    # 摘自207
+
+    class Solution:
+        def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:
+            ins = {} # ins[i] = {j}表示节点j指向i
+            outs = {} # outs[i] = {j}表示节点i指向j
+
+            for i in range(numCourses):
+                ins[i] = set()
+                outs[i] = set()
+
+            for v, w in prerequisites:
+                outs[w].add(v)
+                ins[v].add(w)
+
+            queue = list(filter(lambda v: len(ins[v]) == 0, ins.keys())) # 过滤出所有入度为0的节点，len(ins[v]) == 0表示没有节点指向节点v，所以入度为0
+            traveled = set() # 遍历过的节点
+
+            while queue: # 不停从queue里pop节点
+                node = queue.pop(0)
+
+                for v in outs[node]: # 删除节点node，调整这个节点指向的其他节点v
+                    ins[v].remove(node) # 删掉node指向v这条边
+                    if len(ins[v]) == 0: # 如果发现删掉那条边之后节点v也入度变成0了
+                        queue.append(v) # 加入到queue里
+
+                traveled.add(node) # 遍历节点node完成了
+
+            return len(traveled) == numCourses # 看下是不是所有节点都遍历到了
+
+衍生
+
+-   207 判断有向图里有没有环
