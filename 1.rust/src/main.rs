@@ -12,9 +12,9 @@ impl Solution {
     pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {
         let mut seen = HashMap::new();
         
-        for (i, &v) in nums.iter().enumerate() {
-            if seen.contains_key(&(target - v)) {
-                return vec![*seen.get(&(target - v)).unwrap(), i as i32];
+        for (i, v) in nums.iter().enumerate() {
+            if let Some(j) = seen.get(&(target - *v)) {
+                return vec![*j as i32, i as i32];
             } else {
                 seen.insert(v, i as i32);
             }
@@ -24,6 +24,6 @@ impl Solution {
     }
 }
 
-// pub fn main() {
-//     println!("{:?}", Solution::two_sum(vec![2, 7, 11, 15], 9)); // [0, 1]
-// }
+fn main() {
+    println!("{:?}", Solution::two_sum(vec![2, 7, 11, 15], 9)); // [0, 1]
+}
