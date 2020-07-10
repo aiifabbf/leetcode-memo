@@ -27,26 +27,46 @@ from typing import *
 import heapq
 
 class Solution:
+    # def nthUglyNumber(self, n: int) -> int:
+    #     if n == 1:
+    #         return 1
+    #     else:
+    #         res = [1] # 存u_1, u_2, ..., u_n
+    #         usable = [] # 存表格
+    #         heapq.heapify(usable) # 用heap，这样每次pop出来都是最小的
+    #         setUsable = set() # 表格里面会有很多重复的数，用set保证插入到heap里面的数都是没有重复的
+
+    #         while len(res) != n: # 直到u_n
+
+    #             for v in [2, 3, 5]: # 生成2 u_k, 3 u_k, 5 u_k并且插入到heap中
+    #                 if v * res[-1] not in setUsable: # 当然要保证heap里没有这个数
+    #                     setUsable.add(v * res[-1])
+    #                     heapq.heappush(usable, v * res[-1])
+
+    #             temp = heapq.heappop(usable) # 从表格中取出最小的那个数
+    #             res.append(temp) # 取出来的那个数就是u_{k+1}
+
+    #         return res[-1] # u_n是最后一个数字
+
     def nthUglyNumber(self, n: int) -> int:
         if n == 1:
             return 1
-        else:
-            res = [1] # 存u_1, u_2, ..., u_n
-            usable = [] # 存表格
-            heapq.heapify(usable) # 用heap，这样每次pop出来都是最小的
-            setUsable = set() # 表格里面会有很多重复的数，用set保证插入到heap里面的数都是没有重复的
 
-            while len(res) != n: # 直到u_n
+        usable = [2, 3, 5]
+        heapq.heapify(usable)
+        seen = {2, 3, 5}
+        res = [1]
 
-                for v in [2, 3, 5]: # 生成2 u_k, 3 u_k, 5 u_k并且插入到heap中
-                    if v * res[-1] not in setUsable: # 当然要保证heap里没有这个数
-                        setUsable.add(v * res[-1])
-                        heapq.heappush(usable, v * res[-1])
+        for i in range(n - 1):
+            node = heapq.heappop(usable)
+            res.append(node)
 
-                temp = heapq.heappop(usable) # 从表格中取出最小的那个数
-                res.append(temp) # 取出来的那个数就是u_{k+1}
+            for j in [2, 3, 5]:
+                if node * j not in seen:
+                    seen.add(node * j)
+                    heapq.heappush(usable, node * j)
 
-            return res[-1] # u_n是最后一个数字
+        return res[-1]
 
 # s = Solution()
 # print(s.nthUglyNumber(10)) # 12
