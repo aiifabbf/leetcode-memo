@@ -16,7 +16,7 @@ from typing import *
 class Solution:
     def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:
         ins = {} # ins[i] = {j}表示节点j指向i
-        outs = {} # outs[i] = {j}表示节点i指向j
+        outs = {} # outs[i] = {j}表示节点i指向j，表示课程i是课程j的依赖，上课程j之前要先上过课程i才可以
 
         for i in range(numCourses):
             ins[i] = set()
