@@ -35,6 +35,10 @@
 .. [#py] 在之前python的版本里，我把 ``dp[i]`` 定义成了以第 `i` 个字符结尾的最长不重复substring的长度，我现在觉得这是不对的，任何时候都应该遵循左闭右开的原则，可以减少巨多边界检查、越界之类的麻烦。但是这样也有不自然的地方，算 ``dp[i]`` 的时候反而看的是 ``s[i - 1]`` 。
 
 .. [#] 这个我也是想了很久很久才想出来的。一开始怎么也想不出。
+
+面头条的时候被问了这题，我写了双指针的版本，但是回来一想，发现根本没法证明正确性。这两天又连续做了类似的双指针的题（比如424、1004）。我觉得还是把双指针当成是DP的一种加速手段比较好理解。
+
+用DP的角度来理解，就是计算出以 ``s[j - 1]`` 结尾的、最长的不含重复字符的substring。
 */
 
 struct Solution;
@@ -44,6 +48,33 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 impl Solution {
+    // 用双指针和hash map加速的DP。比普通的DP简洁许多，我觉得目前见到的最好的方法
+    #[cfg(feature = "fast-dp")]
+    pub fn length_of_longest_substring(s: String) -> i32 {
+        let string: Vec<char> = s.chars().collect();
+        let mut i = 0;
+        let mut seen: HashSet<char> = HashSet::new();
+        let mut res = 0;
+
+        for j in 1..string.len() + 1 {
+            // 计算出以s[j - 1]结尾的、最长的不含重复字符的substring
+
+            while seen.contains(&string[j - 1]) {
+                // 不停地右移左指针i，直到集合里面不含s[j - 1]为止，这样才能保证唯一
+                seen.remove(&string[i]);
+                i += 1;
+            }
+
+            // 到这里，s[i..j]就是以s[j - 1]结尾的、最长的不含重复字符的substring了
+            seen.insert(string[j - 1]);
+            res = res.max(j - i); // 记录一下长度
+        }
+
+        return res as i32;
+    }
+
+    // 普通的DP
+    #[cfg(feature = "dp")]
     pub fn length_of_longest_substring(s: String) -> i32 {
         let mut seen = HashMap::new();
         let s: Vec<char> = s.chars().collect();
@@ -53,11 +84,13 @@ impl Solution {
 
         for i in 1..s.len() + 1 {
             let mut thisDp = 0;
-            if !seen.contains_key(&s[i - 1]) { // s[i - 1]在整个string里都是第一次出现
+            if !seen.contains_key(&s[i - 1]) {
+                // s[i - 1]在整个string里都是第一次出现
                 thisDp = lastDp + 1; // 放心大胆地追加在前一个substring后面
             } else {
                 // 放心用seen[v]，不会panic，因为到这里seen一定包含v
-                if seen[&s[i - 1]] >= i - 1 - lastDp { // 在前一个substring里面出现过s[i - 1]
+                if seen[&s[i - 1]] >= i - 1 - lastDp {
+                    // 在前一个substring里面出现过s[i - 1]
                     thisDp = i - (seen[&s[i - 1]] + 1); // 从h + 1处截断
                 } else {
                     thisDp = lastDp + 1;
@@ -71,32 +104,33 @@ impl Solution {
         return res as i32;
     }
 
-    // 又发现了一种双指针的做法，但是我没法证明这个是对的
-    // pub fn length_of_longest_substring(s: String) -> i32 {
-    //     let s: Vec<char> = s.chars().collect();
-    //     let mut left = 0;
-    //     let mut right = 0;
-    //     let mut seen = HashSet::new();
-    //     let mut res = 0;
+    // 又发现了一种双指针的做法，但是我没法证明这个是对的，而且边界条件很难写对。我还是推荐上面的DP+双指针加速的方法，又好理解、又好写
+    #[cfg(feature = "two-pointers")]
+    pub fn length_of_longest_substring(s: String) -> i32 {
+        let s: Vec<char> = s.chars().collect();
+        let mut left = 0;
+        let mut right = 0;
+        let mut seen = HashSet::new();
+        let mut res = 0;
 
-    //     while right < s.len() {
+        while right < s.len() {
 
-    //         while left < right {
-    //             if seen.contains(&s[right]) {
-    //                 seen.remove(&s[left]);
-    //                 left += 1;
-    //             } else {
-    //                 break;
-    //             }
-    //         }
+            while left < right {
+                if seen.contains(&s[right]) {
+                    seen.remove(&s[left]);
+                    left += 1;
+                } else {
+                    break;
+                }
+            }
 
-    //         seen.insert(s[right]);
-    //         right += 1;
-    //         res = max(res, right - left);
-    //     }
+            seen.insert(s[right]);
+            right += 1;
+            res = max(res, right - left);
+        }
 
-    //     return res as i32;
-    // }
+        return res as i32;
+    }
 }
 
 pub fn main() {
