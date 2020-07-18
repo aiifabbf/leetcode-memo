@@ -931,6 +931,7 @@ array变成链表
 -   739 找到array中每个元素之后最近的比自己大的元素
 -   1019 找到链表中每个节点之后最近的比自己大的元素
 -   1008 从先根遍历路径重建二分搜索树
+-   1475 找到后面第一个比自己小或相等的元素
 
 从array中找到某个元素前面、离这个元素最远的、小于或等于这个元素的元素的下标
 ---------------------------------------------------------------
@@ -1235,6 +1236,7 @@ array变成链表
 -   1036 巨大的地图里能否从起点走到终点
 -   1202 互换字符能得到的最小字典序的字符串
 -   1034 描出边界
+-   695 最大的岛屿面积
 
 最长公共subsequence
 ------------------
@@ -1314,7 +1316,7 @@ array变成链表
 .. code-block:: python
 
     def divisors(n: int) -> set:
-        factors = {} # 用set可以过滤掉重复的因数
+        factors = set() # 用set可以过滤掉重复的因数
 
         for i in range(1, math.ceil(n) + 1):
             if n % i == 0: # 发现i是因数
@@ -1914,36 +1916,25 @@ KMP
 
 .. code-block:: python
 
-    # 摘自207
+    # 摘自210
 
-    class Solution:
-        def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:
-            ins = {} # ins[i] = {j}表示节点j指向i
-            outs = {} # outs[i] = {j}表示节点i指向j
+    queue = list(filter(lambda v: len(ins[v]) == 0, ins.keys())) # 先筛选出不依赖任何其他课程的课
+    res = [] # 上课顺序
 
-            for i in range(numCourses):
-                ins[i] = set()
-                outs[i] = set()
+    while queue:
+        node = queue.pop(0) # 从queue的前面取出课程，假设叫课程node
 
-            for v, w in prerequisites:
-                outs[w].add(v)
-                ins[v].add(w)
+        for neighbor in outs[node]: # 遍历依赖课程node的所有课程，比如图形学依赖的线性代数、微积分
+            ins[neighbor].remove(node) # 因为课程node已经上过了，所以把依赖项删掉，也就是说把图形学对线性代数的依赖删掉
+            if len(ins[neighbor]) == 0: # 删掉依赖项之后，发现新的课也能上了
+                queue.append(neighbor) # 放到待选queue里
 
-            queue = list(filter(lambda v: len(ins[v]) == 0, ins.keys())) # 过滤出所有入度为0的节点，len(ins[v]) == 0表示没有节点指向节点v，所以入度为0
-            traveled = set() # 遍历过的节点
-
-            while queue: # 不停从queue里pop节点
-                node = queue.pop(0)
-
-                for v in outs[node]: # 删除节点node，调整这个节点指向的其他节点v
-                    ins[v].remove(node) # 删掉node指向v这条边
-                    if len(ins[v]) == 0: # 如果发现删掉那条边之后节点v也入度变成0了
-                        queue.append(v) # 加入到queue里
-
-                traveled.add(node) # 遍历节点node完成了
-
-            return len(traveled) == numCourses # 看下是不是所有节点都遍历到了
+        res.append(node)
+        outs.pop(node) # 从图里面删掉这门课
+        ins.pop(node) # 从图里面删掉这门课
 
 衍生
 
 -   207 判断有向图里有没有环
+-   1494 最快多久毕业
+-   210 选课的顺序
