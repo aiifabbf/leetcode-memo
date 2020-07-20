@@ -1064,6 +1064,7 @@ array变成链表
 -   1371 含有偶数个元音字母的最长substring
 -   1310 快速计算任意substring的累积xor
 -   303 计算任意substring的累加和
+-   1177 有多少个substring能重新排列变成回文
 
 .. note:: 这种方法又叫前缀和 aka. prefix sum。
 
