@@ -1,4 +1,4 @@
-/* 
+/*
 从inorder和postorder遍历恢复出原来的二叉树。
 
 大致原理是，观察inorder和postorder遍历得到的array的结构。inorder是这样的
@@ -69,7 +69,7 @@ impl Solution {
         }
 
         let rootValue = postorder.last().unwrap().clone(); // postorder的最后一个元素肯定是根节点的值
-        let mut root = Some(Rc::new(RefCell::new(TreeNode::new(rootValue)))); // 建立根节点
+        let mut root = TreeNode::new(rootValue); // 建立根节点
         let mut boundary = 0; // inorder里左子树的右边界
 
         for i in 0..inorder.len() {
@@ -87,12 +87,10 @@ impl Solution {
         let rightInorder = &inorder[boundary + 1..]; // 右子树的inorder遍历结果
         let rightPostorder = &postorder[boundary..postorder.len() - 1]; // 右子树的postorder遍历结果
 
-        root.as_mut().unwrap().borrow_mut().left =
-            Solution::treeFromInorderPostorder(leftInorder, leftPostorder); // 递归地重建左子树
-        root.as_mut().unwrap().borrow_mut().right =
-            Solution::treeFromInorderPostorder(rightInorder, rightPostorder); // 递归地重建右子树
+        root.left = Solution::treeFromInorderPostorder(leftInorder, leftPostorder); // 递归地重建左子树
+        root.right = Solution::treeFromInorderPostorder(rightInorder, rightPostorder); // 递归地重建右子树
 
-        return root;
+        return Some(Rc::new(RefCell::new(root)));
     }
 }
 
