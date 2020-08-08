@@ -1640,14 +1640,103 @@ Tokenize
 前缀树
 ------
 
+也叫字典树。
+
 节点的定义
 
-.. code-block:: python
+.. code-block:: rust
 
-    class Node:
-        def __init__(self):
-            self.children: Dict[str, Node] = {}
-            self.value: Any = None
+    # 摘自208
+
+    struct Trie {
+        value: Option<char>, // 用来标记能否是某个单词的末尾
+        children: BTreeMap<char, Trie>, // 用BTreeMap可以保证有序
+    }
+
+插入单词。打通一条从根节点到最后一个字符的路径
+
+.. code-block:: rust
+
+    impl Trie {
+        fn insert(&mut self, word: String) {
+            let mut head = self;
+
+            for v in word.chars() {
+                if !head.children.contains_key(&v) {
+                    head.children.insert(v, Trie::new());
+                }
+                head = head.children.get_mut(&v).unwrap();
+            }
+
+            head.value = Some('\0'); // 最后一个char上标记一下，表示这边可以终止
+        }
+    }
+
+查找单词。看是否存在一条路径，并且最后一个节点还要是终止节点
+
+.. code-block:: rust
+
+    impl Trie {
+        fn search(&self, word: String) -> bool {
+            let mut head = self;
+
+            for v in word.chars() {
+                if let Some(child) = head.children.get(&v) {
+                    head = child;
+                } else {
+                    // 走不下去了
+                    return false;
+                }
+            }
+
+            return head.value.is_some(); // 一定要正好在这个char上终止才算数
+        }
+    }
+
+.. note:: 我怀疑把字典树稍加改动就能变成trie map，直接把key对应的value放在最后一个char对应的节点上，就是让 ``value`` 从表示终止变成直接表示value。
+
+    .. code-block:: rust
+
+        impl TrieMap {
+            fn new() -> Self {
+                Self {
+                    value: None,
+                    children: BTreeMap::new(),
+                }
+            }
+
+            fn insert(&mut self, key: String, value: String) {
+                let mut head = self;
+
+                for v in key.chars() {
+                    if !head.children.contains_key(&v) {
+                        head.children.insert(v, TrieMap::new());
+                    }
+                    head = head.children.get_mut(&v).unwrap();
+                }
+
+                head.value = Some(value);
+            }
+
+            fn get(&self, key: &String) -> Option<&String> {
+                let mut head = self;
+
+                for v in key.chars() {
+                    if let Some(child) = head.children.get(&v) {
+                        head = child;
+                    } else {
+                        return None;
+                    }
+                }
+
+                return head.value.as_ref();
+            }
+        }
+
+衍生
+
+-   208 实现前缀树
+-   211 用前缀树实现单词查找
 
 后缀列表
 -------
