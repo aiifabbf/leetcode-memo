@@ -44,7 +44,7 @@ class Solution:
         else:
             return 0
 
-    @functools.lru_cache()
+    @functools.lru_cache() # 其实这个cache没卵用……
     def pathSumCount(self, root: TreeNode, sum: int) -> int: # 从根节点出发，向下能加到sum的路径的数量
         if root:
             if root.left == None and root.right == None: # 叶子
