@@ -4,6 +4,8 @@
 把常见的几个排序算法都实现一遍
 
 我暂时写了合并排序、快速排序、计数排序。
+
+人算不如天算，面拼多多被问了heap sort，没写出来很尴尬。痛定思痛，终于花了一上午搞懂了。
 */
 
 struct Solution;
@@ -139,9 +141,105 @@ impl Solution {
 
         return res;
     }
+
+    // 堆排序
+    #[cfg(feature = "heap-sort")]
+    pub fn sort_array(nums: Vec<i32>) -> Vec<i32> {
+        // heap sort分两步，第一步是把array变成heap。有max heap和min heap之分。所谓max heap就是这样一个树，对于其中任意一个节点，节点的值都大于等于它任意一个子节点的值
+        let mut array = nums;
+        Self::heapify(&mut array); // 原地把array变成max heap
+
+        // 第二步是不停抽取max heap的顶端元素，也就是array[0]，放到array的后面。第i次抽取的元素放到array.len() - i - 1处，比如第0次抽取的正好就是整个array里最大数，所以放到array.len() - 1处。
+        for i in (0..array.len()).rev() {
+            array.swap(i, 0); // 用交换来实现pop max heap顶端元素。此时heap的范围从array[0..i + 1]变成了array[0..i]并且可能不再满足heap的性质了
+            Self::sink(&mut array[..i], 0); // 所以要把新来的顶端元素下沉放到正确的位置，以维持array[0..i]作为heap的约束
+        }
+
+        return array;
+    }
+
+    // 把array原地变成最大堆
+    fn heapify<T>(array: &mut [T])
+    where
+        T: PartialOrd,
+    {
+        // heapify的过程其实就是已有一个heap、加入新元素、把新元素上浮到正确的位置以保证heap的性质的过程
+        // 空array自身就是个heap，所以array[0..0]本身就是个heap，第一步是要把array[0]纳入到array[0..0]这个heap里，形成新的heap，使得array[0..1]仍然保持heap的性质
+        for i in 0..array.len() {
+            // 把第i个数加入到heap里
+            Self::swim(array, i);
+        }
+    }
+
+    // 把节点上浮直到达到顶端、或者父节点的值大于等于这个节点的值
+    fn swim<T>(heap: &mut [T], index: usize)
+    where
+        T: PartialOrd,
+    {
+        let mut index = index;
+
+        // 把一个节点向上移动，移到正确的位置为止
+        while index != 0 && heap[index] > heap[(index - 1) / 2] {
+            heap.swap(index, (index - 1) / 2);
+            index = (index - 1) / 2;
+        }
+    }
+
+    // 把节点下沉到底、或者大于等于两个子节点为止
+    fn sink<T>(heap: &mut [T], index: usize)
+    where
+        T: PartialOrd,
+    {
+        let mut index = index;
+
+        // 把一个节点往下移动，移到正确的位置为止
+        while index < heap.len() {
+            match (heap.get(index * 2 + 1), heap.get(index * 2 + 2)) {
+                (Some(left), Some(right)) => {
+                    // 两个子节点都存在的情况
+                    let child = if left > right {
+                        index * 2 + 1
+                    } else {
+                        index * 2 + 2
+                    }; // 取大的那个节点的下标
+                    if &heap[index] < &heap[child] {
+                        heap.swap(index, child);
+                        index = child;
+                    } else {
+                        // 大于等于大的那个子节点，所以大于等于两个子节点，所以到位了
+                        break;
+                    }
+                }
+                (Some(left), None) => {
+                    // 只存在左边节点的情况
+                    if &heap[index] < left {
+                        heap.swap(index, index * 2 + 1);
+                        index = index * 2 + 1;
+                    } else {
+                        break;
+                    }
+                }
+                (None, Some(right)) => {
+                    // 只存在右边节点的情况
+                    if &heap[index] < right {
+                        heap.swap(index, index * 2 + 2);
+                        index = index * 2 + 2;
+                    } else {
+                        break;
+                    }
+                }
+                _ => {
+                    break;
+                }
+            }
+        }
+    }
 }
 
 fn main() {
     dbg!(Solution::sort_array(vec![5, 2, 3, 1]));
     dbg!(Solution::sort_array(vec![5, 1, 1, 2, 0, 0]));
+    dbg!(Solution::sort_array(vec![
+        -4, 0, 7, 4, 9, -5, -1, 0, -7, -1
+    ]));
 }

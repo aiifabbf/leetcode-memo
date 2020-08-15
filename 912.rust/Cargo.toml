@@ -9,7 +9,8 @@ edition = "2018"
 [dependencies]
 
 [features]
-default = ["quick-sort"]
+default = ["heap-sort"]
 merge-sort = []
 quick-sort = []
 counting-sort = []
+heap-sort = []
