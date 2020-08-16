@@ -28,6 +28,9 @@
 
 struct Solution;
 
+use std::collections::HashMap;
+use std::collections::HashSet;
+
 impl Solution {
     // 关联矩阵，很浪费空间，但是却出奇的快
     #[cfg(feature = "adjacency-matrix")]
@@ -63,7 +66,7 @@ impl Solution {
                 (
                     graph[*v]
                         .iter()
-                        .filter(|target| **target <= distance_threshold as i64)
+                        .filter(|distance| **distance <= distance_threshold as i64)
                         .count(),
                     -(*v as i64),
                 )
@@ -74,8 +77,6 @@ impl Solution {
     // 用关联集合存可以省空间，把空间复杂度从O(v^2)降低到O(e)。但是我不知道为啥慢了20多倍……
     #[cfg(feature = "adjacency-set")]
     pub fn find_the_city(n: i32, edges: Vec<Vec<i32>>, distance_threshold: i32) -> i32 {
-        use std::collections::HashMap;
-
         let mut graph: HashMap<i32, HashMap<i32, i32>> = HashMap::new();
 
         for i in 0..n {
@@ -133,6 +134,89 @@ impl Solution {
                 )
             })
             .unwrap_or(0);
+    }
+
+    // 竟然出人意料地快啊，比关联集合还要快
+    #[cfg(feature = "dijkstra")]
+    pub fn find_the_city(n: i32, edges: Vec<Vec<i32>>, distance_threshold: i32) -> i32 {
+        let mut graph: HashMap<i32, HashMap<i32, i32>> = HashMap::new();
+
+        for v in edges.into_iter() {
+            let a = v[0];
+            let b = v[1];
+            let w = v[2];
+
+            match graph.get_mut(&a) {
+                Some(targets) => {
+                    targets.insert(b, w);
+                }
+                None => {
+                    graph.insert(a, [(b, w)].iter().cloned().collect());
+                }
+            }
+
+            match graph.get_mut(&b) {
+                Some(targets) => {
+                    targets.insert(a, w);
+                }
+                None => {
+                    graph.insert(b, [(a, w)].iter().cloned().collect());
+                }
+            }
+        }
+
+        let mut distances = HashMap::new();
+
+        for city in 0..n {
+            // 以每个城市为起点，算出这个城市到其他每个城市的最短距离
+            distances.insert(city, Self::distances(city, &graph));
+        }
+
+        return (0..n)
+            .min_by_key(|v| {
+                (
+                    distances[v]
+                        .iter()
+                        .filter(|(target, distance)| **distance <= distance_threshold)
+                        .count(),
+                    -*v,
+                )
+            })
+            .unwrap_or(0);
+    }
+
+    fn distances(start: i32, graph: &HashMap<i32, HashMap<i32, i32>>) -> HashMap<i32, i32> {
+        let mut queue: HashSet<i32> = [start].iter().cloned().collect();
+        let mut traveled = HashSet::new();
+        let mut res: HashMap<i32, i32> = [(start, 0)].iter().cloned().collect(); // 起点到起点的距离是0
+
+        while let Some(node) = queue.iter().min_by_key(|v| res[v]).cloned() {
+            // 取出queue里距离起点最近的点，这个点到起点的最短距离这时候已经确定了，不会再变化了
+            queue.remove(&node); // 取出来
+            let distanceToNode = res[&node]; // 起点到这个节点距离
+
+            for (neighbor, delta) in graph.get(&node).unwrap_or(&HashMap::new()).iter() {
+                // 遍历这个节点的所有邻居
+                match res.get_mut(neighbor) {
+                    Some(distance) => {
+                        // 如果之前更新过这个邻居到起点的距离
+                        *distance = (*distance).min(distanceToNode + delta); // 试试经过这个节点到邻居会不会更近
+                    }
+                    None => {
+                        // 之前没见过这个节点
+                        res.insert(*neighbor, distanceToNode + delta);
+                    }
+                }
+
+                if !traveled.contains(neighbor) {
+                    queue.insert(*neighbor);
+                }
+            }
+
+            traveled.insert(node);
+        }
+
+        return res;
     }
 }
 

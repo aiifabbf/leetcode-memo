@@ -12,3 +12,4 @@ edition = "2018"
 default = ["adjacency-matrix"]
 adjacency-matrix = []
 adjacency-set = []
+dijkstra = []
