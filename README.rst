@@ -132,6 +132,8 @@ array中满足某个条件的所有substring问题
 判断一个array是不是另一个array的substring（连续）
 -------------------------------------------
 
+这要用 `KMP`_ 。
+
 .. note:: 原来的代码
 
     .. code-block:: python
@@ -160,7 +162,6 @@ array中满足某个条件的所有substring问题
         substring in array
 
     就搞定。
-
 
 二叉树的先根遍历
 -------------
@@ -252,7 +253,9 @@ array中满足某个条件的所有substring问题
             else:
                 pass
 
-也可以借助stack，然后迭代，但是写起来挺麻烦的……
+也可以借助stack，然后迭代，虽然写起来代码很少，但是很难理解。
+
+我觉得模拟函数调用栈的方法好理解一点。但是不典型，代码就不放在这里了。如果真的想知道怎么做的话，看 `94题 <./94.py>`_ 的代码吧。
 
 .. note::
 
@@ -660,7 +663,7 @@ array中满足某个条件的所有substring问题
 找一个元素后面第一个比自己大的元素
 -----------------------------
 
-暴力做法是搜索，复杂度 :math:`O(n^2)` 。用stack可以做到 :math:`O(n)`
+暴力做法是搜索，复杂度 :math:`O(n^2)` 。用单调递减stack可以做到 :math:`O(n)`
 
 .. code-block:: python
 
@@ -694,25 +697,23 @@ array中满足某个条件的所有substring问题
                     stack.append((i, v))
             return res # 初始化的好处就是最后直接返回，不用补零什么的
 
-遍历链表
-----------
+遍历单向链表
+-----------
+
+统计链表的长度
 
 .. code-block:: python
 
-    # 改编自206
+    head = sentinel.next
+    index = 0
 
-    class Solution:
-        def reverseList(self, head: ListNode) -> ListNode:
-            if head:
-                sentinel = head
+    while head:
+        # 此时head是第index个节点，可以在不确定长度的情况下做点什么事情
 
-                while head:
-                    doSomething(head)
-                    head = head.next
+        index += 1
+        head = head.next
 
-                return sentinel
-            else:
-                return None
+    # index就是链表的长度
 
 得到链表的第 `k` 个节点
 
@@ -720,17 +721,43 @@ array中满足某个条件的所有substring问题
 
     # 摘自876
 
-    let head = origin;
+    head = sentinel.next
 
-    for _ in 0..k {
-        head = head.unwrap().next;
-    }
+    for i in range(k):
+        # head此时是第i个节点，可以做点什么事情
 
-    return head;
+        head = head.next
 
-.. note:: 颠倒链表（206题）
+    # head是第k个节点
+
+插入单向链表
+-----------
+
+如果要插入到 `k` 位置，需要先找到第 `k - 1` 个节点，追加在后面。
+
+.. code-block:: python
+
+    # 摘自707
+
+    head = sentinel.next
+
+    for i in range(k - 1):
+        head = head.next
+
+    # 出来之后head正好第k - 1个节点
+
+    node = ListNode(val) # 要插入的节点
+    node.next = head.next # 这个节点的后一个节点是第k个节点
+    head.next = node # 第k - 1个节点后面一个节点是要插入的节点
+
+删除单向链表
+-----------
+
+.. note:: 颠倒链表
 
     .. code-block:: python
+
+        # 摘自206
 
         class Solution:
             def reverseList(self, head: ListNode) -> ListNode:
@@ -768,34 +795,6 @@ array中满足某个条件的所有substring问题
                     return res
                 else:
                     return []
-
-.. note:: 遍历的同时不丢失之前一个节点
-
-    在有些需求中，比如在删除第i个节点的时候，需要把第i-1个节点的next直接指向第i+1个节点，但是在遍历到第i个节点时候，如果用上面的代码会发现没办法再去找第i-1个节点了，第i-1个节点已经丢失了。
-
-    此时就要用到假节点，然后再用一个previous记录head之前一个节点。
-
-    .. code-block:: python
-
-        # 摘自707
-
-        class Solution:
-            def deleteAtIndex(self, index: int) -> None: # 删除第i个节点
-                """
-                Delete the index-th node in the linked list, if the index is valid.
-                """
-                head = self.sentinel.next
-                previous = self.sentinel
-                i = 0
-
-                while head:
-                    if i == index: # 此时head是第i个节点，previous是第i-1个节点
-                        previous.next = head.next # 直接跨过第i个节点，把第i-1个节点和后面的第i+1个节点连起来。
-                        return
-                    else:
-                        i += 1
-                        previous = head
-                        head = head.next
 
 array变成链表
 -------------
@@ -1017,6 +1016,10 @@ array变成链表
 
 -   704 二分搜索
 -   278 找到第一个bad version
+-   1011 最少要多少天运完货
+-   1552 尽可能稀疏放球
+-   528 带权采样
+-   436 找开始时间大于等于自己结束时间的区间
 
 区间求和
 -------
@@ -1125,6 +1128,23 @@ array变成链表
 -   42  接雨水
 -   1310 求任意substring的累积xor
 
+线段树
+------
+
+用 ``integrals[j] - integrals[i] == sum(array[i: j])`` 查询很方便，复杂度 `O(1)` ，但是如果要修改怎么办？只能重新算一遍 ``integrals`` ，复杂度 `O(n)` 。
+
+不用 ``integrals`` 的话，算 ``sum(array[i: j])`` 很麻烦，复杂度 `O(n)` ，但是修改方便， `O(1)` 。
+
+所以这是两个极端。
+
+线段树是折中方案，查询、修改都是 `O(n \ln n)` 。
+
+原理也很简单，和二分搜索树差不多。根节点存 `[l, r)` 的和、也就是 ``sum(array[l: r])`` 。设 `m` 是 `l, r` 的中位数，即 `m = \left\lfloor{l + r \over 2}\right\rfloor` 。
+
+衍生
+
+-   307 求array任意区间的累加和，array里的数频繁修改
+
 无向图中判断两个节点之间是否有路径联通
 --------------------------------
 
@@ -1204,7 +1224,8 @@ array变成链表
                 return rootOfP == rootOfQ;
             }
 
-            fn union(&mut self, p: T, q: T) { // 所以把优化图结构的事情移到了这里，不知道这个对性能有什么影响
+            fn union(&mut self, p: T, q: T) {
+                // 所以把优化图结构的事情移到了这里，不知道这个对性能有什么影响
                 let mut p = p;
 
                 while *self.get(&p).unwrap() != p {
@@ -1239,6 +1260,12 @@ array变成链表
 -   1202 互换字符能得到的最小字典序的字符串
 -   1034 描出边界
 -   695 最大的岛屿面积
+
+在一维情况下可以退化到区间边界查询，用两个hash map搞定
+
+-   128 从array里挑数字能凑多长的连续整数序列
+-   1562 存在 `k` 个连续1的最后一步
+-   352 相邻整数组成区间
 
 最长公共subsequence
 ------------------
@@ -1647,7 +1674,7 @@ Tokenize
 
 .. code-block:: rust
 
-    # 摘自208
+    // 摘自208
 
     struct Trie {
         value: Option<char>, // 用来标记能否是某个单词的末尾
@@ -1738,6 +1765,7 @@ Tokenize
 
 -   208 实现前缀树
 -   211 用前缀树实现单词查找
+-   1032 最后见过的几个字母能否构成单词
 
 后缀列表
 -------
@@ -1746,8 +1774,8 @@ Tokenize
 
 怎么构造呢？有个叫做 `倍增构造法 <https://www.cnblogs.com/SGCollin/p/9974557.html>`_ 的算法。
 
-线性时间、无额外空间、把array里某些元素全部移动到最后面
-------------------------------------------------
+线性时间、无额外空间、把array里满足条件的元素全部移动到最后面
+-----------------------------------------------------
 
 这个问题叫 `荷兰国旗问题 <https://en.wikipedia.org/wiki/Dutch_national_flag_problem>`_ ，不过我把这个问题叫做“荷叶上的水滴合并”问题哈哈。我自己觉得比什么国旗形象多了。
 
@@ -1785,10 +1813,32 @@ Tokenize
             else:
                 return
 
+既然是个非对称滑动窗口，写成for更不容易出错
+
+.. code-block:: rust
+
+    let mut left = 0;
+
+    for right in 0..array.len() {
+        if f(array[left]) {
+            // 遇到满足条件的
+            continue; // 吸收
+        } else {
+            // 遇到不满足条件的
+            array.swap(left, right);
+            left += 1;
+        }
+    }
+
+    // 到这里，array[..left]里都是不满足条件的元素，array[left..]里都是满足条件的元素
+
+快速排序的partition阶段用了这个算法。
+
 衍生
 
 -   283 把array里所有的0都移动到array的最后面
 -   75  给只含有 ``0, 1, 2`` 的array从小到大排序
+-   912 快速排序
 
 固定长度的滑动窗口
 ----------------
@@ -2053,6 +2103,13 @@ KMP
 -   22 给 `n` 对括号，所有合法的排列
 -   797 从起点到终点的所有路径
 -   437 二叉树里有多少条单向路径累加和正好是target
+-   37 解数独
+-   967 生成所有相邻两位差值是 `k` 的十进制 `n` 位数
+-   1286 生成 `n` 个元素的 `r` 的组合
+-   79 单词是否在棋盘里
+-   131 把字符串切成回文substring有哪些切法
+-   980 每个空位都经过且只经过一次的路径有多少个
+-   216 `[1, 9]` 里不重复取 `k` 个数字加起来正好等于 `n` 总共有多少种取法
 
 有向图中是否有环
 --------------
@@ -2061,25 +2118,144 @@ KMP
 
 .. code-block:: python
 
-    # 摘自210
+    # 改编自210
 
-    queue = list(filter(lambda v: len(ins[v]) == 0, ins.keys())) # 先筛选出不依赖任何其他课程的课
-    res = [] # 上课顺序
+    queue = list(filter(lambda v: len(ins[v]) == 0, ins.keys())) # 挑出所有入度是0的节点
+    res = [] # 拓扑排序的顺序
 
     while queue:
-        node = queue.pop(0) # 从queue的前面取出课程，假设叫课程node
+        node = queue.pop(0)
 
-        for neighbor in outs[node]: # 遍历依赖课程node的所有课程，比如图形学依赖的线性代数、微积分
-            ins[neighbor].remove(node) # 因为课程node已经上过了，所以把依赖项删掉，也就是说把图形学对线性代数的依赖删掉
-            if len(ins[neighbor]) == 0: # 删掉依赖项之后，发现新的课也能上了
-                queue.append(neighbor) # 放到待选queue里
+        for neighbor in outs[node]: # 遍历能从这个节点出发到达的所有其他节点
+            ins[neighbor].remove(node) # 更新图
+            if len(ins[neighbor]) == 0: # 把node从图上摘掉之后，可能neighbor的入度也会变成0
+                queue.append(neighbor)
 
         res.append(node)
-        outs.pop(node) # 从图里面删掉这门课
-        ins.pop(node) # 从图里面删掉这门课
+        outs.pop(node) # 更新图
+        ins.pop(node) # 更新图
 
 衍生
 
 -   207 判断有向图里有没有环
 -   1494 最快多久毕业
 -   210 选课的顺序
+
+点之间的最短距离
+--------------
+
+如果只想知道从某一个点出发到每个点的最短距离，建议用 `Dijkstra算法 <https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm>`_ ，单起点复杂度 `O(e + v \ln v) \approx O(v^2 + v \ln v)` 。
+
+如果要想一次性知道每个点对的最短距离，建议用 `Floyd算法 <https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm>`_ ，总复杂度 `O(v^3)` ，缺点是要算就要整张图一起算才对，没办法单独算 `i, j` 之间的最短距离。
+
+.. code-block:: rust
+
+    // 摘自1334
+
+    // 初始条件
+    for i in 0..n {
+        graph[i][i] = 0; // 自己和自己相连
+    }
+
+    for relay in 0..n {
+        for a in 0..n {
+            for b in 0..n {
+                graph[a][b] = min(graph[a][b], graph[a][relay] + graph[relay][b]);
+            }
+        }
+    }
+
+判断任意substring（要连续）是否是回文
+---------------------------------
+
+用动态规划最好理解。如果 ``s[i..j]`` 是回文、并且左右两边紧邻的两个字符相等、即 ``s[i - 1] == s[j]`` 的话，那么 ``s[i - 1..j + 1]`` 也一定是回文，如图
+
+::
+
+     a x x x x x a
+      i         j
+
+缺一不可，充分必要，否则 ``s[i - 1..j + 1]`` 一定不是回文。
+
+所以用 ``dp[i][j]`` 记录 ``s[i..j]`` 是不是回文。
+
+.. code-block:: rust
+
+    // 摘自131
+
+    let s: Vec<char> = s.chars().collect();
+    let mut dp = vec![vec![false; s.len() + 1]; s.len() + 1]; // dp[i][j] == true表示s[i..j]是回文
+
+    // 初始条件
+    for i in 0..s.len() + 1 {
+        dp[i][i] = true; // 空字符串是回文
+    }
+
+    // 初始条件
+    for i in 0..s.len() {
+        dp[i][i + 1] = true; // 单字符也是回文
+    }
+
+    for gap in 2..s.len() + 1 {
+        for i in 0..s.len() - gap + 1 {
+            let j = i + gap;
+            // s[i..j]是不是回文、即dp[i][j]是否为true，完全取决于s[i]是不是等于s[j - 1]、并且s[i + 1..j - 1]是不是回文、即dp[i + 1][j - 1]是不是true
+            if s[i] == s[j - 1] && dp[i + 1][j - 1] == true {
+                dp[i][j] = true;
+            }
+        }
+    }
+
+复杂度 `O(n^2)` 。
+
+衍生
+
+-   131 把字符串切成回文substring的切法
+-   132 把字符串切成回文substring最少切多少次
+
+精简零散的区间、合并成大区间、整理区间碎片
+------------------------------------
+
+比如 `[1, 2), [2, 3), [3, 4), [1, 5)` 合并成 `[1, 5)` 。
+
+1.  按开始时间排序
+2.  依次进入stack，分情况讨论
+
+    -   如果stack空，直接放进去
+    -   如果stack不空，比较一下现在要放入的区间和stack顶端的区间
+
+        -   如果两个区间没有交集，还是直接放进去
+            比如将要放入 `[2, 3)` ，而stack顶的区间是 `[1, 2)` ，两者没有交集，那么直接把 `[2, 3)` 放进去就好了。
+
+        -   如果有交集，那么先pop、再取两个区间的并集、再放进stack
+            比如将要放入 `[2, 4)` ，而stack顶的区间是 `[1, 3)` ，那么先pop，再取并集，变成 `[1, 4)` 再放入stack。
+
+.. code-block:: rust
+
+    // 摘自56
+
+    intervals.sort(); // 按开始时间从小到大排序
+    let mut stack = vec![];
+
+    for v in intervals.into_iter() {
+        if stack.is_empty() {
+            stack.push(v);
+        } else {
+            if stack.last().unwrap().1 < v.0 {
+                // 和stack顶端的区间没有交集
+                stack.push(v); // 直接放进去
+            } else {
+                // 有交集
+                let mut merged = stack.pop().unwrap(); // 先pop
+                merged.0 = merged.0.min(v.0);
+                merged.1 = merged.1.max(v.1); // 再合并
+                stack.push(merged); // 再放入
+            }
+        }
+    }
+
+衍生
+
+-   56 精简区间
+-   763 把字符串尽可能切成很多substring同时每种字符只在一个substring里出现
+-   57 插入并精简区间
