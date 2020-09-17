@@ -2259,3 +2259,32 @@ KMP
 -   56 精简区间
 -   763 把字符串尽可能切成很多substring同时每种字符只在一个substring里出现
 -   57 插入并精简区间
+
+最小生成树
+----------
+
+空间中有一些点 `\{v_i\}` ，点之间的距离 `d(v_i, v_j)` 是确定的。现在想要用一棵树把所有点都连起来。树的总长度最小是多少？
+
+这就是最小生成树问题。有时候还会绕一个弯问你，一些城市之间修公路，想要连通每个城市，最少要修多少公里公路。
+
+用 `Kruskal算法 <https://en.wikipedia.org/wiki/Kruskal%27s_algorithm>`_ 很好做。把所有的边、一共 `v^2` 条边，按长度从小到大排序，然后每次取最短的边，看这条边如果连接起来会不会让图中出现环，如果不出现环，就放心地加上这条边；如果会出现环，这条边不能取。
+
+.. code-block:: python3
+
+    # 摘自1584
+
+    graph = UnionFindGraph() # 用来判断会不会出现环
+    edges.sort(key=lambda v: v[1]) # 按边长从小到大排序
+    res = 0 # 最小生成树的总长度
+
+    for (a, b), distance in edges:
+        if a not in graph:
+            graph[a] = a
+        if b not in graph:
+            graph[b] = b
+
+        if not graph.isConnected(a, b): # 如果a和b已经连通了，那么再加入(a, b)这条边一定会产生环
+            res += distance
+            graph.union(a, b)
+
+    return res
