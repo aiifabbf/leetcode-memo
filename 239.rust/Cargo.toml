@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 
 [features]
-default = ["monotonous-queue"]
+default = ["b-tree-map"]
 monotonous-queue = []
 heap = []
+b-tree-map = []

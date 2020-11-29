@@ -1,4 +1,4 @@
-/* 
+/*
 详细解释在 `python版 <./239.py>`_ 里。
 */
 
@@ -9,6 +9,7 @@ trait Decreasing<T: Ord> {
     fn push_back_decreasing(&mut self, value: T);
 }
 
+use std::collections::BTreeMap;
 use std::collections::BinaryHeap;
 use std::collections::VecDeque;
 
@@ -108,6 +109,45 @@ impl Solution {
 
             return res;
         }
+    }
+
+    // 今天突然想到还能用B tree map做，复杂度是O(n ln n)，非常可以了，而且是最容易理解、最自然的做法
+    #[cfg(feature = "b-tree-map")]
+    pub fn max_sliding_window(nums: Vec<i32>, k: i32) -> Vec<i32> {
+        let k = k as usize;
+        let mut window: BTreeMap<i32, usize> = BTreeMap::new(); // window是个counter，key是当前window里出现的元素，value是这个元素在window里出现的次数
+
+        // 初始window，范围是array[0..k]
+        for v in nums.iter().take(k) {
+            *window.entry(*v).or_insert(0) += 1;
+        }
+
+        let mut res = vec![window.range(..).rev().next().unwrap().0.clone()];
+
+        // 然后一格一格地逐个向右移动window
+        for i in 1..nums.len() - k + 1 {
+            // 更新counter，该删的删
+            let target = nums[i - 1];
+            match window.get_mut(&target) {
+                Some(count) => {
+                    if *count > 1 {
+                        *count -= 1;
+                    } else {
+                        window.remove(&target);
+                    }
+                }
+                _ => {}
+            };
+
+            // 该加的加
+            let target = nums[i + k - 1];
+            *window.entry(target).or_insert(0) += 1;
+            // 到这里window就是array[i..i + k]的counter了
+
+            res.push(window.range(..).rev().next().unwrap().0.clone()); // 取得counter里最大的key就好了
+        }
+
+        return res;
     }
 }
 
